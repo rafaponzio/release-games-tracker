@@ -38,11 +38,44 @@ export class WikipediaGameScraper {
     const defaultYear = options.defaultYear || new Date().getFullYear();
     const sourceUrl = options.sourceUrl || null;
 
+    // Remove reference sup tags to avoid [1], [b] polluting dates & titles
+    $('sup.reference, .reference').remove();
+
     // Find all wikitable tables
     $('table.wikitable').each((_, tableElem) => {
       const table = $(tableElem);
       const rows = table.find('tr');
       if (rows.length < 2) return;
+
+      // Extract header names from first row, expanding colspans
+      const firstRow = rows.first();
+      const headerTexts: string[] = [];
+      firstRow.find('th').each((_, th) => {
+        const text = $(th).text().trim().toLowerCase();
+        const colspan = parseInt($(th).attr('colspan') || '1', 10);
+        for (let c = 0; c < colspan; c++) {
+          headerTexts.push(text);
+        }
+      });
+
+
+      const titleCol = headerTexts.findIndex((h) => h.includes('title'));
+      const dateCol = headerTexts.findIndex((h) => h.includes('date') || h.includes('release'));
+      const platformCol = headerTexts.findIndex((h) => h.includes('platform'));
+      const genreCol = headerTexts.findIndex((h) => h.includes('genre'));
+      const devCol = headerTexts.findIndex((h) => h.includes('developer'));
+      const pubCol = headerTexts.findIndex((h) => h.includes('publisher'));
+
+      // Check if table uses Month rowspan format (legacy Wikipedia style)
+      const hasMonthRowspan = table.find('td[rowspan]').toArray().some((td) => {
+        const text = $(td).text().trim().toLowerCase();
+        return Boolean(MONTH_MAP[text]);
+      });
+
+      // If this table has explicit title and platform headers and is not a month-rowspan table
+      const isDynamicTable = !hasMonthRowspan && titleCol !== -1 && platformCol !== -1;
+
+
 
       let currentMonth: string | null = null;
       let monthRowspanRemaining = 0;
@@ -51,68 +84,113 @@ export class WikipediaGameScraper {
         const row = $(rowElem);
         const headers = row.find('th');
         if (headers.length > 0 && rowIndex === 0) {
-          // Header row
           return;
         }
 
         const cells = row.find('td');
         if (cells.length === 0) return;
 
-        let cellIndex = 0;
-        let dayStr: string | null = null;
-        let rawDateStr: string | null = null;
+        let title = '';
+        let rawDateStr = '';
+        let rawPlatforms = '';
+        let rawGenres = '';
+        let developer: string | null = null;
+        let publisher: string | null = null;
+        let gameArticleUrl: string | null = sourceUrl;
 
-        // Check if first cell is a month with rowspan
-        const firstCell = $(cells[0]);
-        const firstText = sanitizeText(firstCell.text());
-        const firstTextLower = firstText.toLowerCase();
+        if (isDynamicTable && cells.length >= Math.max(titleCol, platformCol)) {
+          // Dynamic Header Mode
+          const titleCell = $(cells[titleCol]);
+          title = sanitizeText(titleCell.text());
 
-        if (MONTH_MAP[firstTextLower]) {
-          currentMonth = MONTH_MAP[firstTextLower];
-          const rowspan = parseInt(firstCell.attr('rowspan') || '1', 10);
-          monthRowspanRemaining = rowspan;
-          cellIndex = 1; // day is in next cell
-
-          if (cells.length > cellIndex) {
-            dayStr = sanitizeText($(cells[cellIndex]).text());
-            cellIndex++;
+          const link = titleCell.find('a').attr('href');
+          if (link && link.startsWith('/wiki/')) {
+            gameArticleUrl = `https://en.wikipedia.org${link}`;
           }
-        } else if (monthRowspanRemaining > 0 && currentMonth) {
-          // Month is active from previous rowspan, current cell 0 is day
-          dayStr = sanitizeText(firstCell.text());
-          cellIndex = 1;
+
+          if (dateCol !== -1 && cells.length > dateCol) {
+            rawDateStr = sanitizeText($(cells[dateCol]).text());
+          }
+
+          if (platformCol !== -1 && cells.length > platformCol) {
+            rawPlatforms = sanitizeText($(cells[platformCol]).text());
+          }
+
+          if (genreCol !== -1 && cells.length > genreCol) {
+            rawGenres = sanitizeText($(cells[genreCol]).text());
+          }
+
+          if (devCol !== -1 && cells.length > devCol) {
+            developer = sanitizeText($(cells[devCol]).text()) || null;
+          }
+
+          if (pubCol !== -1 && cells.length > pubCol) {
+            publisher = sanitizeText($(cells[pubCol]).text()) || null;
+          }
         } else {
-          // Might be unscheduled / single date cell
-          rawDateStr = sanitizeText(firstCell.text());
-          cellIndex = 1;
+          // Legacy Rowspan Mode (e.g. Month rowspan cell 0, Day cell 1, Title cell 2...)
+          let cellIndex = 0;
+          let dayStr: string | null = null;
+
+          const firstCell = $(cells[0]);
+          const firstText = sanitizeText(firstCell.text());
+          const firstTextLower = firstText.toLowerCase();
+
+          if (MONTH_MAP[firstTextLower]) {
+            currentMonth = MONTH_MAP[firstTextLower];
+            const rowspan = parseInt(firstCell.attr('rowspan') || '1', 10);
+            monthRowspanRemaining = rowspan;
+            cellIndex = 1;
+
+            if (cells.length > cellIndex) {
+              dayStr = sanitizeText($(cells[cellIndex]).text());
+              cellIndex++;
+            }
+          } else if (monthRowspanRemaining > 0 && currentMonth) {
+            dayStr = sanitizeText(firstCell.text());
+            cellIndex = 1;
+          } else {
+            rawDateStr = sanitizeText(firstCell.text());
+            cellIndex = 1;
+          }
+
+          if (monthRowspanRemaining > 0) {
+            monthRowspanRemaining--;
+          }
+
+          const titleCell = $(cells[cellIndex]);
+          const platformCell = $(cells[cellIndex + 1]);
+          const genreCell = $(cells[cellIndex + 2]);
+          const devCell = $(cells[cellIndex + 3]);
+          const pubCell = $(cells[cellIndex + 4]);
+
+          title = sanitizeText(titleCell.text());
+          const link = titleCell.find('a').attr('href');
+          if (link && link.startsWith('/wiki/')) {
+            gameArticleUrl = `https://en.wikipedia.org${link}`;
+          }
+
+          rawPlatforms = sanitizeText(platformCell.text());
+          rawGenres = sanitizeText(genreCell.text());
+          developer = devCell.length ? sanitizeText(devCell.text()) || null : null;
+          publisher = pubCell.length ? sanitizeText(pubCell.text()) || null : null;
+
+          if (currentMonth && dayStr && /^\d{1,2}$/.test(dayStr)) {
+            rawDateStr = `${currentMonth} ${dayStr}, ${defaultYear}`;
+          }
         }
 
-        if (monthRowspanRemaining > 0) {
-          monthRowspanRemaining--;
-        }
-
-        // Remaining cells: Title, Platform(s), Genre(s), Developer(s), Publisher(s)
-        const titleCell = $(cells[cellIndex]);
-        const platformCell = $(cells[cellIndex + 1]);
-        const genreCell = $(cells[cellIndex + 2]);
-        const devCell = $(cells[cellIndex + 3]);
-        const pubCell = $(cells[cellIndex + 4]);
-
-        const title = sanitizeText(titleCell.text());
-        if (!title) return;
-
-        const rawPlatforms = sanitizeText(platformCell.text());
-        const rawGenres = sanitizeText(genreCell.text());
-        const developer = devCell.length ? sanitizeText(devCell.text()) || null : null;
-        const publisher = pubCell.length ? sanitizeText(pubCell.text()) || null : null;
+        if (!title || title.length < 2) return;
 
         // Parse date
         let parsedDate: ParsedReleaseDate;
-        if (currentMonth && dayStr && /^\d{1,2}$/.test(dayStr)) {
-          const dateString = `${currentMonth} ${dayStr}, ${defaultYear}`;
-          parsedDate = parseReleaseDateString(dateString);
-        } else if (rawDateStr) {
-          parsedDate = parseReleaseDateString(rawDateStr);
+        if (rawDateStr) {
+          // If raw date is like "January 5", append defaultYear if year is absent
+          let dateToParse = rawDateStr;
+          if (/^[a-z]+\s+\d{1,2}$/i.test(rawDateStr.trim())) {
+            dateToParse = `${rawDateStr.trim()}, ${defaultYear}`;
+          }
+          parsedDate = parseReleaseDateString(dateToParse);
         } else {
           parsedDate = parseReleaseDateString('TBA');
         }
@@ -138,7 +216,7 @@ export class WikipediaGameScraper {
           developer,
           description: null,
           releaseDate: parsedDate,
-          sourceUrl,
+          sourceUrl: gameArticleUrl,
         });
       });
     });

@@ -10,16 +10,16 @@
     "developer": "Rockstar North",
     "description": "Grand Theft Auto VI heads to the state of Leonida, home to the neon-soaked streets of Vice City and beyond in the biggest, most immersive evolution of the Grand Theft Auto series yet.",
     "releaseDate": {
-      "raw": "Fall 2025",
-      "date": "2025-10-01",
-      "precision": "quarter",
-      "year": 2025,
-      "month": 10,
-      "day": null,
+      "raw": "November 19, 2026",
+      "date": "2026-11-19",
+      "precision": "exact",
+      "year": 2026,
+      "month": 11,
+      "day": 19,
       "quarter": 4
     },
-
     "sourceUrl": "https://en.wikipedia.org/wiki/Grand_Theft_Auto_VI",
+
     "createdAt": "2026-10-01T00:00:00.000Z",
     "updatedAt": "2026-10-01T00:00:00.000Z"
   },
@@ -149,15 +149,16 @@
     "developer": "Playground Games",
     "description": "What does it mean to be a Hero? Return to the fairy-tale world of Albion in a new beginning for the legendary franchise.",
     "releaseDate": {
-      "raw": "Q4 2026",
-      "date": "2026-10-01",
-      "precision": "quarter",
-      "year": 2026,
-      "month": 10,
-      "day": 1,
-      "quarter": 4
+      "raw": "February 23, 2027",
+      "date": "2027-02-23",
+      "precision": "exact",
+      "year": 2027,
+      "month": 2,
+      "day": 23,
+      "quarter": 1
     },
     "sourceUrl": "https://en.wikipedia.org/wiki/Fable_(upcoming_video_game)",
+
     "createdAt": "2026-10-01T00:00:00.000Z",
     "updatedAt": "2026-10-01T00:00:00.000Z"
   },

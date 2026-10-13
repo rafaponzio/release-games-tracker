@@ -69,5 +69,18 @@ This document tracks all significant architectural, security, and design decisio
   4. Scheduled automated periodic scraping via `node-cron`.
 - **Rationale**: Provides standard, accessible interoperability with calendar ecosystems while maintaining zero-trust API boundaries.
 
+---
+
+## ADR 007: Wikipedia Infobox Scraper & Granular List Ingestion
+- **Date**: 2026-10-13
+- **Status**: Accepted
+- **Context**: High-level annual overview pages (`2026_in_video_games`) often lack granular release dates, whereas dedicated list pages (`List_of_video_games_released_in_2026`) and game-specific Wikipedia Infoboxes contain exact, authoritative dates (e.g. GTA VI on Nov 19, 2026; Fable on Feb 23, 2027).
+- **Decision**:
+  1. Built [`WikipediaInfoboxScraper`](file:///Users/rafaelponzio/Workspace/release-games-tracker/packages/server/src/scraper/infobox-scraper.ts) extracting exact regional/worldwide dates directly from game article infoboxes.
+  2. Upgraded [`WikipediaGameScraper`](file:///Users/rafaelponzio/Workspace/release-games-tracker/packages/server/src/scraper/wikipedia-scraper.ts) with dynamic `<th>` header detection and `colspan` calculation.
+  3. Integrated two-stage enrichment in [`ScraperService`](file:///Users/rafaelponzio/Workspace/release-games-tracker/packages/server/src/services/scraper-service.ts): ingest release tables and enrich unconfirmed entries via their infobox.
+- **Rationale**: Replaces placeholder or tentative dates with authoritative, exact confirmed release dates.
+
+
 
 

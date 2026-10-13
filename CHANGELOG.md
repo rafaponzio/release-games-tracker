@@ -54,6 +54,13 @@ All notable changes, implementation steps, and work log entries for the Game Rel
 - **Comprehensive Documentation**: Published complete [README.md](file:///Users/rafaelponzio/Workspace/release-games-tracker/README.md) with API reference, setup, and architecture specs.
 - **Verification**: Verified 100% build passes and all 39 tests passing across workspaces (`npm test --workspaces`).
 
+### Scraper Enhancement & Authoritative Date Ingestion (Completed)
+- **Authoritative Infobox Ingestion**: Built [`WikipediaInfoboxScraper`](file:///Users/rafaelponzio/Workspace/release-games-tracker/packages/server/src/scraper/infobox-scraper.ts) to parse game article infoboxes directly, discovering confirmed exact dates (e.g. **Grand Theft Auto VI** on **November 19, 2026**; **Fable** on **February 23, 2027**). Documented in ADR 007.
+- **Dynamic Header & Colspan Parser**: Upgraded [`WikipediaGameScraper`](file:///Users/rafaelponzio/Workspace/release-games-tracker/packages/server/src/scraper/wikipedia-scraper.ts) to parse granular tables from `List_of_video_games_released_in_${year}`.
+- **Calendar Day Precision**: Calendar grid now only pins games with `precision: 'exact'` to day cells, placing seasonal/quarterly windows into the tentative banner.
+- **Test Suite**: Expanded to 40 passing automated tests.
+
+
 
 
 

@@ -1,0 +1,187 @@
+[
+  {
+    "id": "gta-6",
+    "slug": "grand-theft-auto-vi",
+    "title": "Grand Theft Auto VI",
+    "coverUrl": null,
+    "genres": ["Action-Adventure", "Open World"],
+    "platforms": ["PlayStation 5", "Xbox Series X/S"],
+    "publisher": "Rockstar Games",
+    "developer": "Rockstar North",
+    "description": "Grand Theft Auto VI heads to the state of Leonida, home to the neon-soaked streets of Vice City and beyond in the biggest, most immersive evolution of the Grand Theft Auto series yet.",
+    "releaseDate": {
+      "raw": "Fall 2025",
+      "date": "2025-10-01",
+      "precision": "quarter",
+      "year": 2025,
+      "month": 10,
+      "day": null,
+      "quarter": 4
+    },
+
+    "sourceUrl": "https://en.wikipedia.org/wiki/Grand_Theft_Auto_VI",
+    "createdAt": "2026-10-01T00:00:00.000Z",
+    "updatedAt": "2026-10-01T00:00:00.000Z"
+  },
+  {
+    "id": "doom-dark-ages",
+    "slug": "doom-the-dark-ages",
+    "title": "DOOM: The Dark Ages",
+    "coverUrl": null,
+    "genres": ["First-Person Shooter", "Action"],
+    "platforms": ["PC", "PlayStation 5", "Xbox Series X/S"],
+    "publisher": "Bethesda Softworks",
+    "developer": "id Software",
+    "description": "DOOM: The Dark Ages is the prequel to the critically acclaimed DOOM (2016) and DOOM Eternal, telling the epic cinematic origin story of the DOOM Slayer's rage.",
+    "releaseDate": {
+      "raw": "May 15, 2026",
+      "date": "2026-05-15",
+      "precision": "exact",
+      "year": 2026,
+      "month": 5,
+      "day": 15,
+      "quarter": 2
+    },
+    "sourceUrl": "https://en.wikipedia.org/wiki/Doom:_The_Dark_Ages",
+    "createdAt": "2026-10-01T00:00:00.000Z",
+    "updatedAt": "2026-10-01T00:00:00.000Z"
+  },
+  {
+    "id": "metroid-prime-4",
+    "slug": "metroid-prime-4-beyond",
+    "title": "Metroid Prime 4: Beyond",
+    "coverUrl": null,
+    "genres": ["Action-Adventure", "First-Person"],
+    "platforms": ["Nintendo Switch"],
+    "publisher": "Nintendo",
+    "developer": "Retro Studios",
+    "description": "Samus Aran embarks on a brand-new intergalactic mission across mysterious planets, featuring scan-based exploration and beam combat.",
+    "releaseDate": {
+      "raw": "September 25, 2026",
+      "date": "2026-09-25",
+      "precision": "exact",
+      "year": 2026,
+      "month": 9,
+      "day": 25,
+      "quarter": 3
+    },
+    "sourceUrl": "https://en.wikipedia.org/wiki/Metroid_Prime_4:_Beyond",
+    "createdAt": "2026-10-01T00:00:00.000Z",
+    "updatedAt": "2026-10-01T00:00:00.000Z"
+  },
+  {
+    "id": "monster-hunter-wilds",
+    "slug": "monster-hunter-wilds",
+    "title": "Monster Hunter Wilds",
+    "coverUrl": null,
+    "genres": ["Action RPG"],
+    "platforms": ["PC", "PlayStation 5", "Xbox Series X/S"],
+    "publisher": "Capcom",
+    "developer": "Capcom",
+    "description": "Dynamic, ever-changing biomes where massive beasts roam in vast packs, featuring new focus mode aiming and mount riding mechanics.",
+    "releaseDate": {
+      "raw": "February 28, 2026",
+      "date": "2026-02-28",
+      "precision": "exact",
+      "year": 2026,
+      "month": 2,
+      "day": 28,
+      "quarter": 1
+    },
+    "sourceUrl": "https://en.wikipedia.org/wiki/Monster_Hunter_Wilds",
+    "createdAt": "2026-10-01T00:00:00.000Z",
+    "updatedAt": "2026-10-01T00:00:00.000Z"
+  },
+  {
+    "id": "silksong",
+    "slug": "hollow-knight-silksong",
+    "title": "Hollow Knight: Silksong",
+    "coverUrl": null,
+    "genres": ["Metroidvania", "Action"],
+    "platforms": ["PC", "Nintendo Switch", "PlayStation 5", "Xbox Series X/S"],
+    "publisher": "Team Cherry",
+    "developer": "Team Cherry",
+    "description": "Play as Hornet, princess-protector of Hallownest, as she journeys through a whole new kingdom ruled by silk and song.",
+    "releaseDate": {
+      "raw": "November 2026",
+      "date": "2026-11-01",
+      "precision": "month",
+      "year": 2026,
+      "month": 11,
+      "day": 1,
+      "quarter": 4
+    },
+    "sourceUrl": "https://en.wikipedia.org/wiki/Hollow_Knight:_Silksong",
+    "createdAt": "2026-10-01T00:00:00.000Z",
+    "updatedAt": "2026-10-01T00:00:00.000Z"
+  },
+  {
+    "id": "death-stranding-2",
+    "slug": "death-stranding-2-on-the-beach",
+    "title": "Death Stranding 2: On the Beach",
+    "coverUrl": null,
+    "genres": ["Action", "Cinematic Adventure"],
+    "platforms": ["PlayStation 5"],
+    "publisher": "Sony Interactive Entertainment",
+    "developer": "Kojima Productions",
+    "description": "Sam Porter Bridges embarks on a new journey to save humanity from extinction in an expanded world fraught with natural hazards and supernatural threats.",
+    "releaseDate": {
+      "raw": "June 18, 2026",
+      "date": "2026-06-18",
+      "precision": "exact",
+      "year": 2026,
+      "month": 6,
+      "day": 18,
+      "quarter": 2
+    },
+    "sourceUrl": "https://en.wikipedia.org/wiki/Death_Stranding_2:_On_the_Beach",
+    "createdAt": "2026-10-01T00:00:00.000Z",
+    "updatedAt": "2026-10-01T00:00:00.000Z"
+  },
+  {
+    "id": "fable",
+    "slug": "fable-reboot",
+    "title": "Fable",
+    "coverUrl": null,
+    "genres": ["Action RPG"],
+    "platforms": ["PC", "Xbox Series X/S"],
+    "publisher": "Xbox Game Studios",
+    "developer": "Playground Games",
+    "description": "What does it mean to be a Hero? Return to the fairy-tale world of Albion in a new beginning for the legendary franchise.",
+    "releaseDate": {
+      "raw": "Q4 2026",
+      "date": "2026-10-01",
+      "precision": "quarter",
+      "year": 2026,
+      "month": 10,
+      "day": 1,
+      "quarter": 4
+    },
+    "sourceUrl": "https://en.wikipedia.org/wiki/Fable_(upcoming_video_game)",
+    "createdAt": "2026-10-01T00:00:00.000Z",
+    "updatedAt": "2026-10-01T00:00:00.000Z"
+  },
+  {
+    "id": "witcher-polaris",
+    "slug": "the-witcher-4-polaris",
+    "title": "The Witcher: Polaris",
+    "coverUrl": null,
+    "genres": ["RPG", "Open World"],
+    "platforms": ["PC", "PlayStation 5", "Xbox Series X/S"],
+    "publisher": "CD Projekt",
+    "developer": "CD Projekt Red",
+    "description": "A new AAA story-driven open world RPG kicking off a new saga in The Witcher universe, powered by Unreal Engine 5.",
+    "releaseDate": {
+      "raw": "TBA 2027",
+      "date": null,
+      "precision": "tba",
+      "year": 2027,
+      "month": null,
+      "day": null,
+      "quarter": null
+    },
+    "sourceUrl": "https://en.wikipedia.org/wiki/The_Witcher_(video_game_series)",
+    "createdAt": "2026-10-01T00:00:00.000Z",
+    "updatedAt": "2026-10-01T00:00:00.000Z"
+  }
+]

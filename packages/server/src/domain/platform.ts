@@ -28,6 +28,9 @@ const PLATFORM_MAP: Record<string, StandardPlatform> = {
   'xbox series x': StandardPlatform.XBOX_SERIES,
   'xbox series s': StandardPlatform.XBOX_SERIES,
   'xsx': StandardPlatform.XBOX_SERIES,
+  'xbx/s': StandardPlatform.XBOX_SERIES,
+  'xbx': StandardPlatform.XBOX_SERIES,
+  'xbs': StandardPlatform.XBOX_SERIES,
   'xbox series': StandardPlatform.XBOX_SERIES,
   'xbox one': StandardPlatform.XBOX_ONE,
   'xbo': StandardPlatform.XBOX_ONE,
@@ -35,13 +38,17 @@ const PLATFORM_MAP: Record<string, StandardPlatform> = {
   'nintendo switch': StandardPlatform.SWITCH,
   'switch': StandardPlatform.SWITCH,
   'ns': StandardPlatform.SWITCH,
+  'ns2': StandardPlatform.SWITCH,
   // Other OS
   'macos': StandardPlatform.MACOS,
   'mac': StandardPlatform.MACOS,
   'osx': StandardPlatform.MACOS,
   'linux': StandardPlatform.LINUX,
+  'lin': StandardPlatform.LINUX,
   'ios': StandardPlatform.IOS,
   'android': StandardPlatform.ANDROID,
+  'droid': StandardPlatform.ANDROID,
+
 };
 
 export function normalizePlatform(raw: string): StandardPlatform {

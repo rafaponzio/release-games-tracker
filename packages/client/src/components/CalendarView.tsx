@@ -39,10 +39,10 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
   const days = eachDayOfInterval({ start: startDate, end: endDate });
   const weekDays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 
-  // Map games by exact release date "YYYY-MM-DD"
+  // Map games by exact release date "YYYY-MM-DD" (only exact precision)
   const gamesByDate: Record<string, Game[]> = {};
   for (const game of games) {
-    if (game.releaseDate.date) {
+    if (game.releaseDate.date && game.releaseDate.precision === 'exact') {
       if (!gamesByDate[game.releaseDate.date]) {
         gamesByDate[game.releaseDate.date] = [];
       }
@@ -50,14 +50,19 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
     }
   }
 
-  // Games in current month that don't have an exact day (e.g. Month or Quarter precision)
+  // Games in current month/quarter that don't have an exact day
   const currentMonthNum = currentDate.getMonth() + 1;
   const currentYearNum = currentDate.getFullYear();
+  const currentQuarterNum = Math.ceil(currentMonthNum / 3);
   const estimatedMonthGames = games.filter(
     (g) =>
       g.releaseDate.year === currentYearNum &&
-      (g.releaseDate.precision === 'month' && g.releaseDate.month === currentMonthNum)
+      (
+        (g.releaseDate.precision === 'month' && g.releaseDate.month === currentMonthNum) ||
+        (g.releaseDate.precision === 'quarter' && g.releaseDate.quarter === currentQuarterNum)
+      )
   );
+
 
   return (
     <div className="space-y-4">
@@ -93,24 +98,27 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
         </div>
       </div>
 
-      {/* Estimated/TBA releases this month banner */}
+      {/* Estimated/TBA releases this month/quarter banner */}
       {estimatedMonthGames.length > 0 && (
-        <div className="bg-purple-950/30 border border-purple-800/40 rounded-xl p-3 px-4 flex items-center gap-3">
-          <CalIcon className="w-4 h-4 text-purple-400 shrink-0" />
-          <div className="text-xs text-slate-300 flex-1">
-            <span className="font-semibold text-purple-300">Targeted for this month (day TBA):</span>{' '}
+        <div className="bg-purple-950/40 border border-purple-800/50 rounded-xl p-3 px-4 flex flex-wrap items-center gap-2">
+          <div className="flex items-center gap-2 text-xs font-semibold text-purple-300 shrink-0">
+            <CalIcon className="w-4 h-4 text-purple-400" />
+            <span>Targeted for this window (day unconfirmed):</span>
+          </div>
+          <div className="flex flex-wrap items-center gap-1.5">
             {estimatedMonthGames.map((g) => (
               <button
                 key={g.id}
                 onClick={() => onSelectGame(g)}
-                className="inline-block mx-1 underline hover:text-white transition-colors"
+                className="text-xs font-medium px-2.5 py-1 rounded-lg bg-purple-900/50 hover:bg-purple-800/60 border border-purple-600/40 text-purple-100 transition-colors shadow-sm"
               >
-                {g.title}
+                {g.title} <span className="text-[10px] text-purple-300 ml-1">({g.releaseDate.raw})</span>
               </button>
             ))}
           </div>
         </div>
       )}
+
 
       {/* Days of Week Header */}
       <div className="grid grid-cols-7 gap-2 text-center text-xs font-semibold text-slate-400 uppercase tracking-wider py-1">

@@ -8,10 +8,16 @@ import { ScraperService } from './services/scraper-service.js';
 import { CalendarExportService } from './services/calendar-export-service.js';
 import { WikipediaGameScraper } from './scraper/wikipedia-scraper.js';
 
+import fs from 'node:fs';
+
 dotenv.config();
 
 const PORT = parseInt(process.env.PORT || '3001', 10);
-const DATA_FILE = process.env.DATA_FILE || path.join(process.cwd(), 'data', 'games.json');
+const DATA_FILE = process.env.DATA_FILE || (
+  fs.existsSync(path.join(process.cwd(), 'packages', 'server', 'data', 'games.json'))
+    ? path.join(process.cwd(), 'packages', 'server', 'data', 'games.json')
+    : path.join(process.cwd(), 'data', 'games.json')
+);
 const CRON_SCHEDULE = process.env.CRON_SCHEDULE || '0 3 * * *'; // Default: daily at 3am
 
 async function bootstrap() {
@@ -28,16 +34,23 @@ async function bootstrap() {
   });
 
   // Serve static client production build if available
-  const clientDistPath = path.join(process.cwd(), '..', 'client', 'dist');
-  app.use(express.static(clientDistPath));
-  app.get('*', (req, res, next) => {
-    if (req.path.startsWith('/api')) {
-      return next();
-    }
-    res.sendFile(path.join(clientDistPath, 'index.html'), (err) => {
-      if (err) next();
+  const clientDistCandidates = [
+    path.join(process.cwd(), 'packages', 'client', 'dist'),
+    path.join(process.cwd(), '..', 'client', 'dist'),
+  ];
+  const clientDistPath = clientDistCandidates.find((p) => fs.existsSync(p)) || clientDistCandidates[0];
+
+  if (fs.existsSync(clientDistPath)) {
+    app.use(express.static(clientDistPath));
+    app.get('*', (req, res, next) => {
+      if (req.path.startsWith('/api')) {
+        return next();
+      }
+      res.sendFile(path.join(clientDistPath, 'index.html'), (err) => {
+        if (err) next();
+      });
     });
-  });
+  }
 
 
   // Check if database is empty; if so, trigger initial sync for current year

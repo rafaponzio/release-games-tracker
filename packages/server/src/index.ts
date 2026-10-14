@@ -68,17 +68,19 @@ async function bootstrap() {
     }
   }
 
-  // Background cron scheduler
+  // Background cron scheduler: syncs current and upcoming year
   cron.schedule(CRON_SCHEDULE, async () => {
     const currentYear = new Date().getFullYear();
-    console.log(`[Cron] Executing scheduled game release sync for ${currentYear}...`);
+    console.log(`[Cron] Executing scheduled game release sync for ${currentYear} and ${currentYear + 1}...`);
     try {
-      const res = await scraperService.syncYear(currentYear);
-      console.log(`[Cron] Sync finished: scraped ${res.totalScraped}, created ${res.created}, updated ${res.updated}`);
+      await scraperService.syncYear(currentYear);
+      await scraperService.syncYear(currentYear + 1);
+      console.log(`[Cron] Sync finished successfully.`);
     } catch (err: any) {
       console.error(`[Cron] Sync failed: ${err.message}`);
     }
   });
+
 
   app.listen(PORT, () => {
     console.log(`[Server] Game Releases Tracker API running on http://localhost:${PORT}`);

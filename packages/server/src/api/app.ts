@@ -77,10 +77,19 @@ export function createApp(options: AppOptions) {
 
       const query = validation.data;
       const games = await repo.findAll(query);
+
+      // Auto-heal: If an unpopulated year is requested and no scrape is running, initiate background sync
+      if (games.length === 0 && query.year && !scraperService.isSyncing()) {
+        scraperService.syncYear(query.year).catch((err) => {
+          console.warn(`[AutoSync] Background sync for ${query.year} failed: ${err.message}`);
+        });
+      }
+
       res.json({
         total: games.length,
         games,
       });
+
     } catch (err) {
       next(err);
     }

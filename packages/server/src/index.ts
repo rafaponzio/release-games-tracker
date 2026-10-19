@@ -14,9 +14,11 @@ dotenv.config();
 
 const PORT = parseInt(process.env.PORT || '3001', 10);
 const DATA_FILE = process.env.DATA_FILE || (
-  fs.existsSync(path.join(process.cwd(), 'packages', 'server', 'data', 'games.json'))
-    ? path.join(process.cwd(), 'packages', 'server', 'data', 'games.json')
-    : path.join(process.cwd(), 'data', 'games.json')
+  fs.existsSync(path.join(process.cwd(), 'data', 'games.json'))
+    ? path.join(process.cwd(), 'data', 'games.json')
+    : fs.existsSync(path.join(process.cwd(), 'packages', 'server', 'data', 'games.json'))
+      ? path.join(process.cwd(), 'packages', 'server', 'data', 'games.json')
+      : path.join(process.cwd(), '..', '..', 'data', 'games.json')
 );
 const CRON_SCHEDULE = process.env.CRON_SCHEDULE || '0 3 * * *'; // Default: daily at 3am
 

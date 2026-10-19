@@ -12,3 +12,5 @@ coverage/
 *.sqlite
 *.sqlite-journal
 .turbo
+.vercel
+.env*

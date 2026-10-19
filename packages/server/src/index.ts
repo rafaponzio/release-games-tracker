@@ -53,19 +53,27 @@ async function bootstrap() {
   }
 
 
-  // Check if database is empty; if so, trigger initial sync for current year
   const initialCount = await repo.count();
   console.log(`[Database] Loaded ${initialCount} games from ${DATA_FILE}`);
 
-  if (initialCount === 0 && process.env.AUTO_SEED !== 'false') {
-    const currentYear = new Date().getFullYear();
-    console.log(`[Scraper] Initial run: syncing games for year ${currentYear}...`);
-    try {
-      const res = await scraperService.syncYear(currentYear);
-      console.log(`[Scraper] Initial sync complete: scraped ${res.totalScraped}, created ${res.created}.`);
-    } catch (err: any) {
-      console.warn(`[Scraper] Initial sync warning: ${err.message}`);
-    }
+  // Proactive background auto-seed: ensure surrounding years (prior, current, next) are populated
+  if (process.env.AUTO_SEED !== 'false') {
+    (async () => {
+      const currentYear = new Date().getFullYear();
+      const nearbyYears = [currentYear - 1, currentYear, currentYear + 1];
+      for (const y of nearbyYears) {
+        try {
+          const gamesInYear = await repo.findAll({ year: y });
+          if (gamesInYear.length === 0 && !scraperService.isSyncing()) {
+            console.log(`[AutoSeed] Year ${y} has no games in database. Auto-syncing in background...`);
+            const res = await scraperService.syncYear(y);
+            console.log(`[AutoSeed] Completed sync for ${y}: scraped ${res.totalScraped}, created ${res.created}.`);
+          }
+        } catch (err: any) {
+          console.warn(`[AutoSeed] Auto-sync warning for ${y}: ${err.message}`);
+        }
+      }
+    })();
   }
 
   // Background cron scheduler: syncs current and upcoming year

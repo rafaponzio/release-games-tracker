@@ -61,8 +61,17 @@ All notable changes, implementation steps, and work log entries for the Game Rel
 - **Calendar Day Precision**: Calendar grid now only pins games with `precision: 'exact'` to day cells, placing seasonal/quarterly windows into the tentative banner.
 - **Test Suite**: Expanded to 40 passing automated tests.
 
-
-
-
-
-
+### Autonomous Scraper Pipeline & Multi-Year Automation (Completed)
+- **Zero-Manual Scraping Pipeline**:
+  - **Startup Auto-Seed**: On launch, the server automatically checks surrounding years (`currentYear - 1`, `currentYear`, `currentYear + 1`) and non-blockingly populates missing years from Wikipedia.
+  - **On-Demand Auto-Heal**: Querying an unpopulated year automatically triggers a background sync job.
+  - **Daily Scheduled Cron**: Automatically syncs current and upcoming year every night at 3:00 AM.
+- **Multi-Year Data Coverage**:
+  - Ingested 2025 releases (1,051 games), bringing the database to **2,214 total games**.
+  - Populated Switch 2 and major franchise titles including *The Legend of Zelda: Ocarina of Time* (Nov 5, 2026), *The Legend of Zelda: Breath of the Wild – Switch 2 Edition* (June 5, 2025), and *The Legend of Zelda: Tears of the Kingdom – Switch 2 Edition* (June 5, 2025).
+- **Frontend Reactive Auto-Reload & Status Feedback**:
+  - Added reactive pollers and state hooks (`prevSyncingRef`) that auto-refresh the games list immediately when background sync finishes.
+  - Added live sync progress banner indicating active Wikipedia ingestion and upcoming auto-refresh.
+  - Fixed calendar year tracking so changing the year filter automatically updates the calendar view date.
+- **Scraper Quality & Junk Table Filtering**:
+  - Table classification filter in `WikipediaGameScraper` skips non-release tables (abbreviation legends, compilation summaries) to eliminate false positives.

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   format,
   addMonths,
@@ -24,8 +24,18 @@ interface CalendarViewProps {
 export const CalendarView: React.FC<CalendarViewProps> = ({
   games,
   onSelectGame,
+  selectedYear,
 }) => {
-  const [currentDate, setCurrentDate] = useState(new Date());
+  const [currentDate, setCurrentDate] = useState(() => new Date(selectedYear, new Date().getMonth(), 1));
+
+  useEffect(() => {
+    setCurrentDate((prev) => {
+      if (prev.getFullYear() !== selectedYear) {
+        return new Date(selectedYear, prev.getMonth(), 1);
+      }
+      return prev;
+    });
+  }, [selectedYear]);
 
   const prevMonth = () => setCurrentDate((d) => subMonths(d, 1));
   const nextMonth = () => setCurrentDate((d) => addMonths(d, 1));

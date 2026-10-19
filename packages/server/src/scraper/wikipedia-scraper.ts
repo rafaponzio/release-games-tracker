@@ -75,6 +75,11 @@ export class WikipediaGameScraper {
       // If this table has explicit title and platform headers and is not a month-rowspan table
       const isDynamicTable = !hasMonthRowspan && titleCol !== -1 && platformCol !== -1;
 
+      // Skip non-release tables (e.g. platform abbreviation keys, compilation summaries)
+      if (!isDynamicTable && !hasMonthRowspan) {
+        return;
+      }
+
 
 
       let currentMonth: string | null = null;

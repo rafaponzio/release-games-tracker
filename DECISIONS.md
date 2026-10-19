@@ -80,7 +80,15 @@ This document tracks all significant architectural, security, and design decisio
   2. Upgraded [`WikipediaGameScraper`](file:///Users/rafaelponzio/Workspace/release-games-tracker/packages/server/src/scraper/wikipedia-scraper.ts) with dynamic `<th>` header detection and `colspan` calculation.
   3. Integrated two-stage enrichment in [`ScraperService`](file:///Users/rafaelponzio/Workspace/release-games-tracker/packages/server/src/services/scraper-service.ts): ingest release tables and enrich unconfirmed entries via their infobox.
 - **Rationale**: Replaces placeholder or tentative dates with authoritative, exact confirmed release dates.
+---
 
-
-
-
+## ADR 008: Autonomous Multi-Year Scraping Pipeline & Reactive Client Auto-Reload
+- **Date**: 2026-10-19
+- **Status**: Accepted
+- **Context**: Ingestion previously required either an empty database or manual trigger scripts for past/future years, leaving gaps when users browsed other years without proactive synchronization.
+- **Decision**:
+  1. **Non-blocking Startup Auto-Seed**: On server boot, background jobs inspect candidate years (`currentYear - 1`, `currentYear`, `currentYear + 1`) and automatically ingest missing years in sequence without blocking server startup.
+  2. **On-Demand Auto-Heal**: `GET /api/games?year=YYYY` triggers background sync if 0 games exist for that year.
+  3. **Reactive UI Updates**: The React frontend monitors scraper status (`isSyncing`) and automatically reloads the games catalogue as soon as background sync finishes, complete with active visual progress banners.
+  4. **Junk Table Elimination**: `WikipediaGameScraper` strictly validates table headers against release table criteria, discarding non-release tables (legends, compilation summaries).
+- **Rationale**: Eliminates all manual intervention; users experience an automatically populated, self-healing release calendar.

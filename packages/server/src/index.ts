@@ -22,41 +22,42 @@ const DATA_FILE = process.env.DATA_FILE || (
 );
 const CRON_SCHEDULE = process.env.CRON_SCHEDULE || '0 3 * * *'; // Default: daily at 3am
 
-async function bootstrap() {
-  const repo = new FileGameRepository(DATA_FILE);
-  const scraper = new WikipediaGameScraper();
-  const scraperService = new ScraperService(repo, scraper);
-  const calendarService = new CalendarExportService();
+const repo = new FileGameRepository(DATA_FILE);
+const scraper = new WikipediaGameScraper();
+const scraperService = new ScraperService(repo, scraper);
+const calendarService = new CalendarExportService();
 
-  const app = createApp({
-    repo,
-    scraperService,
-    calendarService,
-    enableRateLimit: true,
-  });
+export const app = createApp({
+  repo,
+  scraperService,
+  calendarService,
+  enableRateLimit: true,
+});
 
-  // Serve static client production build if available
-  const clientDistCandidates = [
-    path.join(process.cwd(), 'packages', 'client', 'dist'),
-    path.join(process.cwd(), '..', 'client', 'dist'),
-  ];
-  const clientDistPath = clientDistCandidates.find((p) => fs.existsSync(p)) || clientDistCandidates[0];
+// Serve static client production build if available
+const clientDistCandidates = [
+  path.join(process.cwd(), 'packages', 'client', 'dist'),
+  path.join(process.cwd(), '..', 'client', 'dist'),
+];
+const clientDistPath = clientDistCandidates.find((p) => fs.existsSync(p)) || clientDistCandidates[0];
 
-  if (fs.existsSync(clientDistPath)) {
-    app.use(express.static(clientDistPath));
-    app.get('*', (req, res, next) => {
-      if (req.path.startsWith('/api')) {
-        return next();
-      }
-      res.sendFile(path.join(clientDistPath, 'index.html'), (err) => {
-        if (err) next();
-      });
+if (fs.existsSync(clientDistPath)) {
+  app.use(express.static(clientDistPath));
+  app.get('*', (req, res, next) => {
+    if (req.path.startsWith('/api')) {
+      return next();
+    }
+    res.sendFile(path.join(clientDistPath, 'index.html'), (err) => {
+      if (err) next();
     });
-  }
+  });
+}
 
-
-  const initialCount = await repo.count();
-  console.log(`[Database] Loaded ${initialCount} games from ${DATA_FILE}`);
+// In standalone mode (non-serverless), start background syncs and listen on PORT
+if (!process.env.VERCEL) {
+  repo.count().then((initialCount) => {
+    console.log(`[Database] Loaded ${initialCount} games from ${DATA_FILE}`);
+  });
 
   // Proactive background auto-seed: ensure surrounding years (prior, current, next) are populated
   if (process.env.AUTO_SEED !== 'false') {
@@ -91,13 +92,9 @@ async function bootstrap() {
     }
   });
 
-
   app.listen(PORT, () => {
     console.log(`[Server] Game Releases Tracker API running on http://localhost:${PORT}`);
   });
 }
 
-bootstrap().catch((err) => {
-  console.error('Fatal startup error:', err);
-  process.exit(1);
-});
+export default app;

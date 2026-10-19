@@ -18,11 +18,24 @@ export function App() {
   const [search, setSearch] = useState<string>('');
   const [selectedPlatform, setSelectedPlatform] = useState<StandardPlatform | ''>('');
   const [selectedYear, setSelectedYear] = useState<number>(2026);
+  const [calendarDate, setCalendarDate] = useState<Date>(() => new Date(2026, 9, 1));
   const [selectedGame, setSelectedGame] = useState<Game | null>(null);
 
   const [isSyncing, setIsSyncing] = useState<boolean>(false);
   const [scraperStatus, setScraperStatus] = useState<ScraperStatus | null>(null);
   const prevSyncingRef = useRef<boolean>(false);
+
+  const handleYearChange = (year: number) => {
+    setSelectedYear(year);
+    setCalendarDate((prev) => new Date(year, prev.getMonth(), 1));
+  };
+
+  const handleCalendarDateChange = (newDate: Date) => {
+    setCalendarDate(newDate);
+    if (newDate.getFullYear() !== selectedYear) {
+      setSelectedYear(newDate.getFullYear());
+    }
+  };
 
   const loadData = async () => {
     try {
@@ -128,7 +141,7 @@ export function App() {
           selectedPlatform={selectedPlatform}
           onPlatformChange={setSelectedPlatform}
           selectedYear={selectedYear}
-          onYearChange={setSelectedYear}
+          onYearChange={handleYearChange}
           totalGames={games.length}
         />
 
@@ -162,22 +175,31 @@ export function App() {
           </div>
         )}
 
-        {/* Loading State */}
-        {loading && (
+        {/* Loading State on initial load */}
+        {loading && games.length === 0 && (
           <div className="flex items-center justify-center py-20 text-slate-400 text-sm">
             <div className="w-6 h-6 border-2 border-purple-500 border-t-transparent rounded-full animate-spin mr-3" />
-            Loading games catalogue...
+            Carregando catálogo de lançamentos...
           </div>
         )}
 
-        {/* View Content */}
-        {!loading && (
-          <>
+        {/* View Content (Preserved during filter/search to prevent month jump or DOM recreation) */}
+        {(!loading || games.length > 0) && (
+          <div className="relative">
+            {loading && (
+              <div className="absolute top-2 right-2 z-20 flex items-center gap-2 bg-slate-900/95 border border-purple-500/40 text-purple-300 text-xs px-3 py-1.5 rounded-lg shadow-lg backdrop-blur">
+                <div className="w-3.5 h-3.5 border-2 border-purple-400 border-t-transparent rounded-full animate-spin" />
+                <span>Atualizando...</span>
+              </div>
+            )}
+
             {viewMode === 'calendar' ? (
               <CalendarView
                 games={games}
                 onSelectGame={setSelectedGame}
                 selectedYear={selectedYear}
+                currentDate={calendarDate}
+                onDateChange={handleCalendarDateChange}
               />
             ) : (
               <TimelineView
@@ -185,7 +207,7 @@ export function App() {
                 onSelectGame={setSelectedGame}
               />
             )}
-          </>
+          </div>
         )}
       </main>
 

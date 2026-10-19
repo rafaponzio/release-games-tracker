@@ -75,3 +75,11 @@ All notable changes, implementation steps, and work log entries for the Game Rel
   - Fixed calendar year tracking so changing the year filter automatically updates the calendar view date.
 - **Scraper Quality & Junk Table Filtering**:
   - Table classification filter in `WikipediaGameScraper` skips non-release tables (abbreviation legends, compilation summaries) to eliminate false positives.
+
+### Calendar UX & Day Releases Modal (Completed)
+- **Full Day Releases View (`DayReleasesModal`)**:
+  - Days with more than 3 releases now display a clickable button `+{N} mais (ver todos)` and clickable count badges.
+  - Clicking any day count badge, `+N mais` button, or day header opens a comprehensive modal listing all releases for that date with platform badges, genre tags, developer info, internal search filter, and direct details navigation.
+- **Persistent Calendar Month State**:
+  - Lifted `calendarDate` state to parent (`App.tsx`) so applying search queries or platform filters keeps the user on their currently viewed month.
+  - Eliminated full-view unmounting during background search/filtering, replacing screen flashes with a subtle floating update indicator.

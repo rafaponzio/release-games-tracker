@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import {
   format,
   addMonths,
@@ -14,28 +14,35 @@ import {
 } from 'date-fns';
 import { ChevronLeft, ChevronRight, Calendar as CalIcon } from 'lucide-react';
 import { Game } from '../types';
+import { DayReleasesModal } from './DayReleasesModal';
 
 interface CalendarViewProps {
   games: Game[];
   onSelectGame: (game: Game) => void;
-  selectedYear: number;
+  selectedYear?: number;
+  currentDate?: Date;
+  onDateChange?: (date: Date) => void;
 }
 
 export const CalendarView: React.FC<CalendarViewProps> = ({
   games,
   onSelectGame,
   selectedYear,
+  currentDate: controlledDate,
+  onDateChange: controlledOnDateChange,
 }) => {
-  const [currentDate, setCurrentDate] = useState(() => new Date(selectedYear, new Date().getMonth(), 1));
+  const [internalDate, setInternalDate] = useState(() => new Date(selectedYear || 2026, new Date().getMonth(), 1));
+  const [selectedDay, setSelectedDay] = useState<{ date: Date; games: Game[] } | null>(null);
 
-  useEffect(() => {
-    setCurrentDate((prev) => {
-      if (prev.getFullYear() !== selectedYear) {
-        return new Date(selectedYear, prev.getMonth(), 1);
-      }
-      return prev;
-    });
-  }, [selectedYear]);
+  const currentDate = controlledDate || internalDate;
+  const setCurrentDate = (d: Date | ((prev: Date) => Date)) => {
+    const nextDate = typeof d === 'function' ? d(currentDate) : d;
+    if (controlledOnDateChange) {
+      controlledOnDateChange(nextDate);
+    } else {
+      setInternalDate(nextDate);
+    }
+  };
 
   const prevMonth = () => setCurrentDate((d) => subMonths(d, 1));
   const nextMonth = () => setCurrentDate((d) => addMonths(d, 1));
@@ -156,23 +163,40 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
                   : 'bg-slate-950/20 border-slate-900/60 opacity-40'
               }`}
             >
-              {/* Day Number */}
-              <div className="flex items-center justify-between mb-1.5">
+              {/* Day Number & Count Badge */}
+              <div
+                className={`flex items-center justify-between mb-1.5 ${
+                  dayGames.length > 0 ? 'cursor-pointer group/header' : ''
+                }`}
+                onClick={() => {
+                  if (dayGames.length > 0) {
+                    setSelectedDay({ date: day, games: dayGames });
+                  }
+                }}
+              >
                 <span
-                  className={`text-xs font-semibold px-1.5 py-0.5 rounded-md ${
+                  className={`text-xs font-semibold px-1.5 py-0.5 rounded-md transition-colors ${
                     isCurrentDay
                       ? 'bg-purple-600 text-white'
                       : isCurrMonth
-                      ? 'text-slate-300'
+                      ? 'text-slate-300 group-hover/header:text-purple-300'
                       : 'text-slate-600'
                   }`}
                 >
                   {format(day, 'd')}
                 </span>
                 {dayGames.length > 0 && (
-                  <span className="text-[10px] font-bold text-purple-400 bg-purple-500/10 px-1.5 py-0.2 rounded-full border border-purple-500/20">
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setSelectedDay({ date: day, games: dayGames });
+                    }}
+                    title={`Ver todos os ${dayGames.length} lançamentos deste dia`}
+                    className="text-[10px] font-bold text-purple-300 hover:text-white bg-purple-500/20 hover:bg-purple-600 px-1.5 py-0.2 rounded-full border border-purple-500/30 transition-colors shadow-sm"
+                  >
                     {dayGames.length}
-                  </span>
+                  </button>
                 )}
               </div>
 
@@ -201,15 +225,30 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
                 ))}
 
                 {dayGames.length > 3 && (
-                  <div className="text-[10px] text-purple-400 font-medium text-center">
-                    +{dayGames.length - 3} more
-                  </div>
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setSelectedDay({ date: day, games: dayGames });
+                    }}
+                    className="w-full text-[10px] text-purple-300 hover:text-white bg-purple-950/60 hover:bg-purple-800/80 border border-purple-800/60 rounded py-0.5 font-medium text-center transition-colors shadow-sm block"
+                  >
+                    +{dayGames.length - 3} mais (ver todos)
+                  </button>
                 )}
               </div>
             </div>
           );
         })}
       </div>
+
+      {/* Day Releases Modal */}
+      <DayReleasesModal
+        date={selectedDay?.date ?? null}
+        games={selectedDay?.games ?? []}
+        onClose={() => setSelectedDay(null)}
+        onSelectGame={onSelectGame}
+      />
     </div>
   );
 };

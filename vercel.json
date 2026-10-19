@@ -1,27 +1,20 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
-  "services": {
-    "client": {
-      "root": "packages/client",
-      "framework": "vite"
-    },
-    "server": {
-      "root": "packages/server",
-      "framework": "express"
+  "buildCommand": "npm run build",
+  "outputDirectory": "packages/client/dist",
+  "functions": {
+    "api/index.ts": {
+      "includeFiles": "data/games.json"
     }
   },
   "rewrites": [
     {
       "source": "/api/(.*)",
-      "destination": {
-        "service": "server"
-      }
+      "destination": "/api"
     },
     {
-      "source": "/(.*)",
-      "destination": {
-        "service": "client"
-      }
+      "source": "/((?!assets/|favicon.ico).*)",
+      "destination": "/index.html"
     }
   ]
 }

@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { Analytics } from '@vercel/analytics/react';
 import { Navbar } from './components/Navbar';
 import { FilterBar } from './components/FilterBar';
 import { CalendarView } from './components/CalendarView';
@@ -220,6 +221,9 @@ export function App() {
 
       {/* Game Details Modal */}
       <GameModal game={selectedGame} onClose={() => setSelectedGame(null)} />
+      
+      {/* Vercel Web Analytics */}
+      <Analytics />
     </div>
   );
 }

@@ -248,8 +248,8 @@ export class IgdbService {
 
     const query = `
       fields name, slug, summary, storyline, cover.image_id, genres.name, platforms.name, first_release_date, release_dates.date, release_dates.human, release_dates.m, release_dates.y, release_dates.category, involved_companies.developer, involved_companies.publisher, involved_companies.company.name, url;
-      where release_dates.y = ${year} & hypes != null;
-      sort release_dates.date asc;
+      where release_dates.y = ${year};
+      sort hypes desc;
       limit ${Math.min(limit, 500)};
     `;
 

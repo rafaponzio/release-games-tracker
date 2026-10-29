@@ -24,14 +24,23 @@ export const GameModal: React.FC<GameModalProps> = ({ game, onClose }) => {
           <X className="w-5 h-5" />
         </button>
 
-        {/* Header */}
-        <div>
-          <span className="text-xs font-semibold uppercase tracking-wider text-purple-400 bg-purple-500/10 px-2.5 py-1 rounded-full border border-purple-500/20">
-            {game.releaseDate.precision.toUpperCase()} RELEASE
-          </span>
-          <h2 className="text-xl font-bold text-white mt-2 leading-tight">
-            {game.title}
-          </h2>
+        {/* Header with optional Cover Poster */}
+        <div className="flex gap-4 items-start">
+          {game.coverUrl && (
+            <img
+              src={game.coverUrl}
+              alt={game.title}
+              className="w-24 h-32 object-cover rounded-xl shadow-lg border border-slate-700/80 shrink-0 bg-slate-950"
+            />
+          )}
+          <div className="flex-1 min-w-0 pr-6">
+            <span className="text-xs font-semibold uppercase tracking-wider text-purple-400 bg-purple-500/10 px-2.5 py-1 rounded-full border border-purple-500/20">
+              {game.releaseDate.precision.toUpperCase()} RELEASE
+            </span>
+            <h2 className="text-xl font-bold text-white mt-2 leading-tight">
+              {game.title}
+            </h2>
+          </div>
         </div>
 
         {/* Metadata Grid */}

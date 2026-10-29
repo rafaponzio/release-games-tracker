@@ -7,9 +7,12 @@ import { FileGameRepository } from './repository/file-game-repository.js';
 import { ScraperService } from './services/scraper-service.js';
 import { CalendarExportService } from './services/calendar-export-service.js';
 import { WikipediaGameScraper } from './scraper/wikipedia-scraper.js';
+import { IgdbService } from './services/igdb-service.js';
 
 import fs from 'node:fs';
 
+dotenv.config({ path: path.join(process.cwd(), '.env.local') });
+dotenv.config({ path: path.join(process.cwd(), '.env') });
 dotenv.config();
 
 const PORT = parseInt(process.env.PORT || '3001', 10);
@@ -26,11 +29,13 @@ const repo = new FileGameRepository(DATA_FILE);
 const scraper = new WikipediaGameScraper();
 const scraperService = new ScraperService(repo, scraper);
 const calendarService = new CalendarExportService();
+const igdbService = new IgdbService({ repo });
 
 export const app = createApp({
   repo,
   scraperService,
   calendarService,
+  igdbService,
   enableRateLimit: true,
 });
 
@@ -74,6 +79,19 @@ if (!process.env.VERCEL) {
           }
         } catch (err: any) {
           console.warn(`[AutoSeed] Auto-sync warning for ${y}: ${err.message}`);
+        }
+      }
+
+      if (igdbService.isConfigured()) {
+        try {
+          const games2027 = await repo.findAll({ year: 2027 });
+          if (games2027.length < 5) {
+            console.log('[AutoSeed] IGDB is configured. Auto-syncing 2027 releases from IGDB...');
+            const igdbRes = await igdbService.syncYear(2027);
+            console.log(`[AutoSeed] Completed IGDB sync for 2027: ${igdbRes.total} games fetched.`);
+          }
+        } catch (err: any) {
+          console.warn(`[AutoSeed] IGDB sync warning: ${err.message}`);
         }
       }
     })();

@@ -121,3 +121,14 @@ All notable changes, implementation steps, and work log entries for the Game Rel
 - **Backend Limit Parameter**:
   - Added optional `limit` parameter to `GamesQuerySchema`, `GameFilter`, and `InMemoryGameRepository` to optimize search payload size.
 
+### IGDB Integration & Multi-Source Architecture (Completed)
+- **Twitch IGDB Adapter (`IgdbService`)**:
+  - Implemented client credentials OAuth flow with automated token caching and expiration buffer.
+  - Queries IGDB Apicalypse API for future and tentative releases (2027+), including high-res box art covers (`t_cover_big`), involved companies (developers and publishers), and release date categories.
+  - Mapped IGDB platform IDs and aliases (`PC (Microsoft Windows)`, `Xbox Series X|S`, etc.) to `StandardPlatform`.
+  - Added endpoint `POST /api/scraper/sync-igdb` and startup auto-sync hook for 2027.
+- **Secure Secret Handling**:
+  - Configured server to load credentials safely from `.env.local` or `.env` without exposing keys to git.
+  - Added `.env.example` template.
+
+

@@ -18,6 +18,7 @@ const PLATFORM_MAP: Record<string, StandardPlatform> = {
   'windows': StandardPlatform.PC,
   'win': StandardPlatform.PC,
   'microsoft windows': StandardPlatform.PC,
+  'pc (microsoft windows)': StandardPlatform.PC,
   // PlayStation
   'playstation 5': StandardPlatform.PS5,
   'ps5': StandardPlatform.PS5,
@@ -25,6 +26,7 @@ const PLATFORM_MAP: Record<string, StandardPlatform> = {
   'ps4': StandardPlatform.PS4,
   // Xbox
   'xbox series x/s': StandardPlatform.XBOX_SERIES,
+  'xbox series x|s': StandardPlatform.XBOX_SERIES,
   'xbox series x': StandardPlatform.XBOX_SERIES,
   'xbox series s': StandardPlatform.XBOX_SERIES,
   'xsx': StandardPlatform.XBOX_SERIES,

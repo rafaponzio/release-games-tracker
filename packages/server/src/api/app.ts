@@ -8,10 +8,13 @@ import { ScraperService } from '../services/scraper-service.js';
 import { CalendarExportService } from '../services/calendar-export-service.js';
 import { StandardPlatform } from '../domain/platform.js';
 
+import { IgdbService } from '../services/igdb-service.js';
+
 export interface AppOptions {
   repo: IGameRepository;
   scraperService: ScraperService;
   calendarService: CalendarExportService;
+  igdbService?: IgdbService;
   enableRateLimit?: boolean;
 }
 
@@ -145,6 +148,28 @@ export function createApp(options: AppOptions) {
       if (err.message?.includes('already running')) {
         return res.status(409).json({ error: err.message });
       }
+      next(err);
+    }
+  });
+
+  // Trigger IGDB sync
+  app.post('/api/scraper/sync-igdb', async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      if (!options.igdbService || !options.igdbService.isConfigured()) {
+        return res.status(503).json({
+          error: 'IGDB not configured. Please define TWITCH_CLIENT_ID and TWITCH_CLIENT_SECRET in .env or .env.local.',
+        });
+      }
+
+      const validation = SyncBodySchema.safeParse(req.body);
+      const year = validation.success && validation.data.year ? validation.data.year : 2027;
+
+      const result = await options.igdbService.syncYear(year);
+      res.json({
+        message: `Synced ${result.total} games for ${year} from IGDB`,
+        ...result,
+      });
+    } catch (err: any) {
       next(err);
     }
   });

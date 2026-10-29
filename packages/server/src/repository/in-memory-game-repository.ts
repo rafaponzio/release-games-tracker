@@ -53,7 +53,11 @@ export class InMemoryGameRepository implements IGameRepository {
       });
     }
 
-    return this.sortGames(list);
+    const sorted = this.sortGames(list);
+    if (filter.limit && filter.limit > 0) {
+      return sorted.slice(0, filter.limit);
+    }
+    return sorted;
   }
 
   async findById(id: string): Promise<Game | null> {

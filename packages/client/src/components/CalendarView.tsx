@@ -22,6 +22,7 @@ interface CalendarViewProps {
   selectedYear?: number;
   currentDate?: Date;
   onDateChange?: (date: Date) => void;
+  highlightedGameId?: string | null;
 }
 
 export const CalendarView: React.FC<CalendarViewProps> = ({
@@ -30,6 +31,7 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
   selectedYear,
   currentDate: controlledDate,
   onDateChange: controlledOnDateChange,
+  highlightedGameId,
 }) => {
   const [internalDate, setInternalDate] = useState(() => new Date(selectedYear || 2026, new Date().getMonth(), 1));
   const [selectedDayModal, setSelectedDayModal] = useState<{ date: Date; games: Game[] } | null>(null);
@@ -79,14 +81,20 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
     return isSameMonth(new Date(), currentDate) ? new Date() : startOfMonth(currentDate);
   });
 
-  // Keep mobile selected date synced with month navigation
+  // Keep mobile selected date synced with month navigation or specific target day
   useEffect(() => {
     if (!isSameMonth(selectedMobileDay, currentDate)) {
-      const firstWithReleases = days.find((d) => {
-        const dStr = format(d, 'yyyy-MM-dd');
-        return isSameMonth(d, monthStart) && gamesByDate[dStr]?.length > 0;
-      });
-      setSelectedMobileDay(firstWithReleases || startOfMonth(currentDate));
+      if (currentDate.getDate() !== 1) {
+        setSelectedMobileDay(currentDate);
+      } else {
+        const firstWithReleases = days.find((d) => {
+          const dStr = format(d, 'yyyy-MM-dd');
+          return isSameMonth(d, monthStart) && gamesByDate[dStr]?.length > 0;
+        });
+        setSelectedMobileDay(firstWithReleases || startOfMonth(currentDate));
+      }
+    } else if (!isSameDay(selectedMobileDay, currentDate) && currentDate.getDate() !== 1) {
+      setSelectedMobileDay(currentDate);
     }
   }, [currentDate, days, gamesByDate, monthStart, selectedMobileDay]);
 
@@ -196,6 +204,7 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
               const isCurrMonth = isSameMonth(day, monthStart);
               const isSelected = isSameDay(day, selectedMobileDay);
               const isCurrentDay = isToday(day);
+              const hasHighlightedGame = highlightedGameId ? dayGames.some((g) => g.id === highlightedGameId) : false;
 
               return (
                 <button
@@ -205,6 +214,8 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
                   className={`min-h-[48px] rounded-xl p-1 flex flex-col items-center justify-between transition-all relative ${
                     isSelected
                       ? 'bg-purple-600 text-white shadow-md shadow-purple-600/30 ring-2 ring-purple-400'
+                      : hasHighlightedGame
+                      ? 'bg-purple-950/70 border-2 border-purple-400 ring-2 ring-purple-400/60 text-white animate-pulse'
                       : isCurrMonth
                       ? isCurrentDay
                         ? 'bg-slate-800 border border-purple-500/60 text-white'
@@ -212,7 +223,7 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
                       : 'opacity-30 text-slate-600'
                   }`}
                 >
-                  <span className={`text-xs font-semibold ${isSelected ? 'text-white font-bold' : ''}`}>
+                  <span className={`text-xs font-semibold ${isSelected || hasHighlightedGame ? 'text-white font-bold' : ''}`}>
                     {format(day, 'd')}
                   </span>
 
@@ -222,6 +233,8 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
                       className={`text-[9px] font-bold px-1.5 py-0.2 rounded-full leading-none flex items-center justify-center ${
                         isSelected
                           ? 'bg-white text-purple-900'
+                          : hasHighlightedGame
+                          ? 'bg-purple-400 text-purple-950 font-black'
                           : 'bg-purple-500/20 text-purple-300 border border-purple-500/30'
                       }`}
                     >
@@ -268,12 +281,18 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
             </div>
           ) : (
             <div className="space-y-2.5 pt-1">
-              {selectedMobileGames.map((game) => (
-                <div
-                  key={game.id}
-                  onClick={() => onSelectGame(game)}
-                  className="bg-slate-950/70 active:bg-slate-800 border border-slate-800 hover:border-purple-500/50 rounded-xl p-3.5 transition-all space-y-2 cursor-pointer shadow-sm"
-                >
+              {selectedMobileGames.map((game) => {
+                const isHighlighted = game.id === highlightedGameId;
+                return (
+                  <div
+                    key={game.id}
+                    onClick={() => onSelectGame(game)}
+                    className={`${
+                      isHighlighted
+                        ? 'bg-purple-950/80 active:bg-slate-800 border-2 border-purple-400 ring-2 ring-purple-500/50 rounded-xl p-3.5 transition-all space-y-2 cursor-pointer shadow-lg shadow-purple-500/25 animate-pulse'
+                        : 'bg-slate-950/70 active:bg-slate-800 border border-slate-800 hover:border-purple-500/50 rounded-xl p-3.5 transition-all space-y-2 cursor-pointer shadow-sm'
+                    }`}
+                  >
                   <div className="flex items-start justify-between gap-2">
                     <h4 className="font-bold text-sm text-white group-hover:text-purple-300">
                       {game.title}
@@ -303,7 +322,8 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
                     </div>
                   )}
                 </div>
-              ))}
+                );
+              })}
             </div>
           )}
         </div>
@@ -328,12 +348,15 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
             const dayGames = gamesByDate[dateStr] || [];
             const isCurrMonth = isSameMonth(day, monthStart);
             const isCurrentDay = isToday(day);
+            const hasHighlightedGame = highlightedGameId ? dayGames.some((g) => g.id === highlightedGameId) : false;
 
             return (
               <div
                 key={dateStr}
                 className={`min-h-[110px] rounded-xl p-2 border transition-all flex flex-col justify-between ${
-                  isCurrMonth
+                  hasHighlightedGame
+                    ? 'bg-slate-900 border-2 border-purple-400 ring-2 ring-purple-500/50 shadow-lg shadow-purple-500/25'
+                    : isCurrMonth
                     ? isCurrentDay
                       ? 'bg-slate-900 border-purple-500/50 shadow-md shadow-purple-500/10'
                       : 'bg-slate-900/40 border-slate-800 hover:border-slate-700'
@@ -353,7 +376,9 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
                 >
                   <span
                     className={`text-xs font-semibold px-1.5 py-0.5 rounded-md transition-colors ${
-                      isCurrentDay
+                      hasHighlightedGame
+                        ? 'bg-purple-500 text-white font-bold'
+                        : isCurrentDay
                         ? 'bg-purple-600 text-white'
                         : isCurrMonth
                         ? 'text-slate-300 group-hover/header:text-purple-300'
@@ -370,7 +395,11 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
                         setSelectedDayModal({ date: day, games: dayGames });
                       }}
                       title={`Ver todos os ${dayGames.length} lançamentos deste dia`}
-                      className="text-[10px] font-bold text-purple-300 hover:text-white bg-purple-500/20 hover:bg-purple-600 px-1.5 py-0.2 rounded-full border border-purple-500/30 transition-colors shadow-sm"
+                      className={`text-[10px] font-bold px-1.5 py-0.2 rounded-full border transition-colors shadow-sm ${
+                        hasHighlightedGame
+                          ? 'bg-purple-400 text-purple-950 border-purple-300 font-black'
+                          : 'text-purple-300 hover:text-white bg-purple-500/20 hover:bg-purple-600 border-purple-500/30'
+                      }`}
                     >
                       {dayGames.length}
                     </button>
@@ -379,27 +408,36 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
 
                 {/* Games List in Cell */}
                 <div className="space-y-1.5 flex-1 overflow-hidden">
-                  {dayGames.slice(0, 3).map((g) => (
-                    <button
-                      key={g.id}
-                      onClick={() => onSelectGame(g)}
-                      className="w-full text-left p-1.5 rounded-lg bg-slate-800/80 hover:bg-purple-900/40 border border-slate-700/60 hover:border-purple-500/50 transition-all text-xs group"
-                    >
-                      <p className="font-medium text-slate-200 group-hover:text-purple-200 truncate leading-tight">
-                        {g.title}
-                      </p>
-                      <div className="flex items-center gap-1 mt-0.5 overflow-hidden">
-                        {g.platforms.slice(0, 2).map((p) => (
-                          <span
-                            key={p}
-                            className="text-[9px] font-medium text-slate-400 bg-slate-900 px-1 rounded truncate"
-                          >
-                            {p.replace('PlayStation ', 'PS').replace('Xbox Series ', 'XS').replace('Nintendo ', '')}
-                          </span>
-                        ))}
-                      </div>
-                    </button>
-                  ))}
+                  {dayGames.slice(0, 3).map((g) => {
+                    const isHighlighted = g.id === highlightedGameId;
+                    return (
+                      <button
+                        key={g.id}
+                        onClick={() => onSelectGame(g)}
+                        className={`w-full text-left p-1.5 rounded-lg border transition-all text-xs group ${
+                          isHighlighted
+                            ? 'bg-purple-900/90 text-white border-purple-400 ring-2 ring-purple-400/80 shadow-md shadow-purple-500/30 animate-pulse'
+                            : 'bg-slate-800/80 hover:bg-purple-900/40 border-slate-700/60 hover:border-purple-500/50'
+                        }`}
+                      >
+                        <p className={`font-medium truncate leading-tight ${isHighlighted ? 'text-white font-bold' : 'text-slate-200 group-hover:text-purple-200'}`}>
+                          {g.title}
+                        </p>
+                        <div className="flex items-center gap-1 mt-0.5 overflow-hidden">
+                          {g.platforms.slice(0, 2).map((p) => (
+                            <span
+                              key={p}
+                              className={`text-[9px] font-medium px-1 rounded truncate ${
+                                isHighlighted ? 'bg-purple-950 text-purple-200 border border-purple-500/40' : 'text-slate-400 bg-slate-900'
+                              }`}
+                            >
+                              {p.replace('PlayStation ', 'PS').replace('Xbox Series ', 'XS').replace('Nintendo ', '')}
+                            </span>
+                          ))}
+                        </div>
+                      </button>
+                    );
+                  })}
 
                   {dayGames.length > 3 && (
                     <button

@@ -10,6 +10,7 @@ export interface GameFilter {
   startDate?: string; // YYYY-MM-DD
   endDate?: string;   // YYYY-MM-DD
   precision?: ReleasePrecision;
+  limit?: number;
 }
 
 export type GameUpsertInput = Omit<Game, 'id' | 'createdAt' | 'updatedAt'> & { id?: string };

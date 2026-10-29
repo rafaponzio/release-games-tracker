@@ -222,4 +222,48 @@ describe.each([
     expect(result2.created).toBe(0);
     expect(result2.updated).toBe(2);
   });
+
+  it('limits results when limit is specified', async () => {
+    await repo.bulkUpsert([
+      {
+        title: 'Alpha',
+        slug: 'alpha',
+        coverUrl: null,
+        genres: [],
+        platforms: [StandardPlatform.PC],
+        publisher: null,
+        developer: null,
+        description: null,
+        releaseDate: { raw: '2026-01-01', date: '2026-01-01', precision: ReleasePrecision.EXACT, year: 2026, month: 1, day: 1, quarter: 1 },
+        sourceUrl: null,
+      },
+      {
+        title: 'Beta',
+        slug: 'beta',
+        coverUrl: null,
+        genres: [],
+        platforms: [StandardPlatform.PC],
+        publisher: null,
+        developer: null,
+        description: null,
+        releaseDate: { raw: '2026-01-02', date: '2026-01-02', precision: ReleasePrecision.EXACT, year: 2026, month: 1, day: 2, quarter: 1 },
+        sourceUrl: null,
+      },
+      {
+        title: 'Gamma',
+        slug: 'gamma',
+        coverUrl: null,
+        genres: [],
+        platforms: [StandardPlatform.PC],
+        publisher: null,
+        developer: null,
+        description: null,
+        releaseDate: { raw: '2026-01-03', date: '2026-01-03', precision: ReleasePrecision.EXACT, year: 2026, month: 1, day: 3, quarter: 1 },
+        sourceUrl: null,
+      },
+    ]);
+
+    const results = await repo.findAll({ limit: 2 });
+    expect(results).toHaveLength(2);
+  });
 });

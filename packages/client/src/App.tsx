@@ -20,6 +20,7 @@ export function App() {
   const [selectedYear, setSelectedYear] = useState<number>(2026);
   const [calendarDate, setCalendarDate] = useState<Date>(() => new Date(2026, 9, 1));
   const [selectedGame, setSelectedGame] = useState<Game | null>(null);
+  const [highlightedGameId, setHighlightedGameId] = useState<string | null>(null);
 
   const [isSyncing, setIsSyncing] = useState<boolean>(false);
   const [scraperStatus, setScraperStatus] = useState<ScraperStatus | null>(null);
@@ -35,6 +36,45 @@ export function App() {
     if (newDate.getFullYear() !== selectedYear) {
       setSelectedYear(newDate.getFullYear());
     }
+  };
+
+  const handleSelectGameFromSearch = (game: Game) => {
+    // 1. If game belongs to another year, sync year so games are loaded
+    if (game.releaseDate?.year && game.releaseDate.year !== selectedYear) {
+      setSelectedYear(game.releaseDate.year);
+    }
+
+    // 2. Compute calendar date target
+    let targetDate: Date;
+    if (game.releaseDate?.date && game.releaseDate.precision === 'exact') {
+      const [y, m, d] = game.releaseDate.date.split('-').map(Number);
+      targetDate = new Date(y, m - 1, d);
+    } else if (game.releaseDate?.year && game.releaseDate?.month) {
+      targetDate = new Date(game.releaseDate.year, game.releaseDate.month - 1, 1);
+    } else if (game.releaseDate?.year) {
+      targetDate = new Date(game.releaseDate.year, 0, 1);
+    } else {
+      targetDate = new Date();
+    }
+
+    setCalendarDate(targetDate);
+
+    // 3. Switch to calendar view so user lands directly on that day
+    setViewMode('calendar');
+
+    // 4. Highlight the game visually in the calendar
+    setHighlightedGameId(game.id);
+
+    // 5. Open game details modal
+    setSelectedGame(game);
+
+    // Clear search text so full month of games is visible around this game
+    setSearch('');
+
+    // Clear highlight after 12s
+    setTimeout(() => {
+      setHighlightedGameId((curr) => (curr === game.id ? null : curr));
+    }, 12000);
   };
 
   const loadData = async () => {
@@ -143,6 +183,7 @@ export function App() {
           selectedYear={selectedYear}
           onYearChange={handleYearChange}
           totalGames={games.length}
+          onSelectGame={handleSelectGameFromSearch}
         />
 
         {/* Background Syncing Indicator */}
@@ -200,6 +241,7 @@ export function App() {
                 selectedYear={selectedYear}
                 currentDate={calendarDate}
                 onDateChange={handleCalendarDateChange}
+                highlightedGameId={highlightedGameId}
               />
             ) : (
               <TimelineView

@@ -103,3 +103,21 @@ All notable changes, implementation steps, and work log entries for the Game Rel
 - **Stacked Filter Bar (`FilterBar`)**:
   - Stacked mobile layout with horizontally scrollable platform filter chips.
   - Localized filter labels to Portuguese (*Todos*, *Busca*, etc.).
+
+### Live Search Autocomplete & Jump-to-Date Navigation (Completed)
+- **Live Search Autocomplete (`FilterBar`)**:
+  - Typeahead dropdown activates dynamically while typing with debounced global querying (`searchGamesGlobal`).
+  - Displays game title, formatted release date with status badge (*Data Confirmada* for exact releases), platform badges, and developer.
+  - Keyboard accessibility: arrow keys (`↑` / `↓`) to navigate suggestions, `Enter` to select, `Esc` to close.
+  - Dedicated clear button (`✕`) and live loading spinner (`Loader2`).
+- **Instant Date Navigation & Multi-Year Sync (`App.tsx`)**:
+  - Selecting any game in the search dropdown immediately parses its release precision and date.
+  - Automatically switches the selected year and calendar month/day directly to the game's release date.
+  - Automatically switches view mode to **Calendar**.
+  - Opens the comprehensive game detail card (`GameModal`).
+- **Visual Game Highlighting (`CalendarView`)**:
+  - Highlighted game and day cell receive a glowing purple pulse ring (`animate-pulse`, `ring-2 ring-purple-500`) on both desktop and mobile views.
+  - On mobile, automatically sets the selected agenda day to the game's launch date so the card is directly visible beneath the calendar matrix.
+- **Backend Limit Parameter**:
+  - Added optional `limit` parameter to `GamesQuerySchema`, `GameFilter`, and `InMemoryGameRepository` to optimize search payload size.
+

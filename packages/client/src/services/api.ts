@@ -7,6 +7,7 @@ export interface GameFilters {
   month?: number;
   startDate?: string;
   endDate?: string;
+  limit?: number;
 }
 
 export async function fetchGames(filters: GameFilters = {}): Promise<Game[]> {
@@ -17,6 +18,7 @@ export async function fetchGames(filters: GameFilters = {}): Promise<Game[]> {
   if (filters.month) params.set('month', String(filters.month));
   if (filters.startDate) params.set('startDate', filters.startDate);
   if (filters.endDate) params.set('endDate', filters.endDate);
+  if (filters.limit) params.set('limit', String(filters.limit));
 
   const res = await fetch(`/api/games?${params.toString()}`);
   if (!res.ok) {
@@ -24,6 +26,16 @@ export async function fetchGames(filters: GameFilters = {}): Promise<Game[]> {
   }
   const data = await res.json();
   return data.games;
+}
+
+export async function searchGamesGlobal(query: string, limit: number = 8): Promise<Game[]> {
+  const trimmed = query.trim();
+  if (!trimmed) return [];
+  const params = new URLSearchParams({ search: trimmed, limit: String(limit) });
+  const res = await fetch(`/api/games?${params.toString()}`);
+  if (!res.ok) throw new Error(`Search failed: ${res.statusText}`);
+  const data = await res.json();
+  return data.games || [];
 }
 
 export async function fetchScraperStatus(): Promise<ScraperStatus> {

@@ -83,3 +83,23 @@ All notable changes, implementation steps, and work log entries for the Game Rel
 - **Persistent Calendar Month State**:
   - Lifted `calendarDate` state to parent (`App.tsx`) so applying search queries or platform filters keeps the user on their currently viewed month.
   - Eliminated full-view unmounting during background search/filtering, replacing screen flashes with a subtle floating update indicator.
+
+### Vercel Serverless Deployment (Completed)
+- **Production Serverless Architecture**:
+  - Configured `vercel.json` with client static output from `packages/client/dist` and API function via `api/index.ts`.
+  - Refactored `packages/server/src/index.ts` to export `app` at module level and conditionally gate `app.listen()`, auto-seed, and background cron when running on `process.env.VERCEL`.
+  - Added root `type: module` and server `main: dist/index.js` for clean ESM module resolution in Vercel runtime.
+  - Configured asset bundling to include seed `data/games.json`.
+  - Successfully deployed to `https://release-games-tracker.vercel.app`.
+
+### Mobile Responsiveness & Touch Optimization (Completed)
+- **Mobile Calendar Matrix & Day Agenda (`CalendarView`)**:
+  - Responsive dual-layout: compact date matrix for mobile (`block md:hidden`) alongside desktop grid (`hidden md:block`).
+  - Mobile date matrix shows release dot indicators and day badges, with a selected day agenda list below showing full game cards with touch-friendly tap targets.
+  - Optimized rendering with `useMemo` for day game indexing.
+- **Compact Navbar (`Navbar`)**:
+  - Streamlined branding and icon-only actions on small screens to prevent header wrapping.
+  - Optimized touch targets and spacing for mobile devices.
+- **Stacked Filter Bar (`FilterBar`)**:
+  - Stacked mobile layout with horizontally scrollable platform filter chips.
+  - Localized filter labels to Portuguese (*Todos*, *Busca*, etc.).

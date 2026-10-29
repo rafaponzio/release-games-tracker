@@ -30,28 +30,28 @@ export const FilterBar: React.FC<FilterBarProps> = ({
   totalGames,
 }) => {
   return (
-    <div className="bg-slate-900/60 border border-slate-800 rounded-xl p-4 mb-6 backdrop-blur-sm space-y-3 sm:space-y-0 sm:flex sm:items-center sm:justify-between sm:gap-4">
+    <div className="bg-slate-900/60 border border-slate-800 rounded-xl p-3 sm:p-4 mb-4 sm:mb-6 backdrop-blur-sm space-y-3 sm:space-y-0 sm:flex sm:items-center sm:justify-between sm:gap-4">
       {/* Search Input */}
-      <div className="relative flex-1 min-w-[200px]">
+      <div className="relative flex-1 w-full">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
         <input
           type="text"
           value={search}
           onChange={(e) => onSearchChange(e.target.value)}
-          placeholder="Search games by title, genre, publisher..."
+          placeholder="Buscar jogos por título, gênero, dev..."
           className="w-full pl-9 pr-4 py-2 bg-slate-950 border border-slate-800 rounded-lg text-sm text-white placeholder-slate-500 focus:outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500 transition-all"
         />
       </div>
 
       {/* Platform & Year Selectors */}
-      <div className="flex flex-wrap items-center gap-2">
+      <div className="flex flex-col sm:flex-row sm:items-center gap-2.5">
         {/* Platform Buttons */}
-        <div className="flex items-center gap-1.5 overflow-x-auto py-1">
+        <div className="flex items-center gap-1.5 overflow-x-auto pb-1 sm:pb-0 scroll-smooth -mx-1 px-1">
           {PLATFORM_OPTIONS.map((opt) => (
             <button
               key={opt.value}
               onClick={() => onPlatformChange(opt.value)}
-              className={`px-3 py-1.5 text-xs font-medium rounded-lg whitespace-nowrap transition-all ${
+              className={`px-2.5 sm:px-3 py-1.5 text-xs font-medium rounded-lg whitespace-nowrap transition-all shrink-0 ${
                 selectedPlatform === opt.value
                   ? 'bg-purple-600 text-white shadow-sm shadow-purple-500/20'
                   : 'bg-slate-950 border border-slate-800 text-slate-400 hover:text-slate-200 hover:border-slate-700'
@@ -62,20 +62,22 @@ export const FilterBar: React.FC<FilterBarProps> = ({
           ))}
         </div>
 
-        {/* Year Dropdown */}
-        <select
-          value={selectedYear}
-          onChange={(e) => onYearChange(parseInt(e.target.value, 10))}
-          className="bg-slate-950 border border-slate-800 text-xs font-medium text-slate-300 rounded-lg px-2.5 py-1.5 focus:outline-none focus:border-purple-500"
-        >
-          <option value={2025}>2025</option>
-          <option value={2026}>2026</option>
-          <option value={2027}>2027</option>
-        </select>
+        {/* Year Dropdown & Total Counter */}
+        <div className="flex items-center justify-between sm:justify-start gap-2">
+          <select
+            value={selectedYear}
+            onChange={(e) => onYearChange(parseInt(e.target.value, 10))}
+            className="bg-slate-950 border border-slate-800 text-xs font-medium text-slate-300 rounded-lg px-2.5 py-1.5 focus:outline-none focus:border-purple-500"
+          >
+            <option value={2025}>Ano 2025</option>
+            <option value={2026}>Ano 2026</option>
+            <option value={2027}>Ano 2027</option>
+          </select>
 
-        {/* Total Badge */}
-        <div className="text-xs text-slate-400 px-2 py-1 bg-slate-950 border border-slate-800 rounded-lg whitespace-nowrap">
-          <span className="font-semibold text-purple-400">{totalGames}</span> games
+          {/* Total Badge */}
+          <div className="text-xs text-slate-400 px-2.5 py-1 bg-slate-950 border border-slate-800 rounded-lg whitespace-nowrap">
+            <span className="font-semibold text-purple-400">{totalGames}</span> jogos
+          </div>
         </div>
       </div>
     </div>

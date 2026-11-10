@@ -234,6 +234,18 @@ export const FilterBar: React.FC<FilterBarProps> = ({
                           : 'hover:bg-slate-800/70 text-slate-200'
                       }`}
                     >
+                      {game.coverUrl ? (
+                        <img
+                          src={game.coverUrl}
+                          alt=""
+                          referrerPolicy="no-referrer"
+                          className="w-8 h-11 object-cover rounded-md border border-slate-700/80 shrink-0 bg-slate-900 shadow-sm"
+                        />
+                      ) : (
+                        <div className="w-8 h-11 rounded-md bg-slate-800/80 border border-slate-700/50 flex items-center justify-center shrink-0 text-slate-500">
+                          <Gamepad2 className="w-4 h-4" />
+                        </div>
+                      )}
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2">
                           <h4 className={`text-sm font-semibold truncate ${isActive ? 'text-purple-200' : 'text-white'}`}>

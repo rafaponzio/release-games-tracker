@@ -122,13 +122,23 @@ All notable changes, implementation steps, and work log entries for the Game Rel
   - Added optional `limit` parameter to `GamesQuerySchema`, `GameFilter`, and `InMemoryGameRepository` to optimize search payload size.
 
 ### IGDB Integration & Multi-Source Architecture (Completed)
-- **Twitch IGDB Adapter (`IgdbService`)**:
-  - Implemented client credentials OAuth flow with automated token caching and expiration buffer.
-  - Queries IGDB Apicalypse API for future and tentative releases (2027+), including high-res box art covers (`t_cover_big`), involved companies (developers and publishers), and release date categories.
-  - Mapped IGDB platform IDs and aliases (`PC (Microsoft Windows)`, `Xbox Series X|S`, etc.) to `StandardPlatform`.
-  - Added endpoint `POST /api/scraper/sync-igdb` and startup auto-sync hook for 2027.
-- **Secure Secret Handling**:
-  - Configured server to load credentials safely from `.env.local` or `.env` without exposing keys to git.
-  - Added `.env.example` template.
+### IGDB Multi-Year Enrichment & Modal UX Fixes (Completed)
+- **Modal Overflow & Accessibility Fix (`GameModal`)**:
+  - Resolved issue where long descriptions pushed the modal off-screen making the close button unreachable.
+  - Implemented `max-h-[90vh]` scrollable container with a sticky/fixed top header keeping the close button always accessible.
+  - Added backdrop overlay click listener (`onClick={onClose}`) to dismiss modal when clicking outside.
+  - Added keyboard `Escape` listener for quick accessibility dismissal.
+  - Added `referrerPolicy="no-referrer"` and error fallback handler to external cover images preventing CDN referer blocking.
+  - Localized external source attribution link (*Ver fonte no IGDB* / *Ver fonte na Wikipedia*).
+- **Multi-Year IGDB Ingestion & Database Enrichment**:
+  - Enriched existing 2025, 2026, and 2027 releases using the IGDB Apicalypse API with paginated batch queries.
+  - Increased games with cover art from 250 to **2,296** across all years (770 in 2025, 833 in 2026, 459 in 2027).
+  - Increased games with full descriptions/synopses from ~200 to **2,283**.
+  - Enhanced repository `upsert` and `findBySlug` to intelligently match by canonical slug, `slugify(title)`, and title, merging fields cleanly without downgrading exact release dates.
+- **Visual Cover Art Previews Across App**:
+  - Added cover thumbnails to live search autocomplete dropdown (`FilterBar`).
+  - Added cover thumbnails to day releases modal list (`DayReleasesModal`).
+  - Added cover thumbnails to mobile day agenda cards (`CalendarView`).
+
 
 

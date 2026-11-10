@@ -1,4 +1,5 @@
-import { Game } from '../domain/game.js';
+import { Game, slugify } from '../domain/game.js';
+import { ReleasePrecision } from '../domain/release-date.js';
 import { GameFilter, GameUpsertInput, IGameRepository } from './game-repository.interface.js';
 import crypto from 'node:crypto';
 
@@ -66,7 +67,7 @@ export class InMemoryGameRepository implements IGameRepository {
 
   async findBySlug(slug: string): Promise<Game | null> {
     for (const game of this.games.values()) {
-      if (game.slug === slug) {
+      if (game.slug === slug || slugify(game.title) === slug) {
         return game;
       }
     }
@@ -74,13 +75,47 @@ export class InMemoryGameRepository implements IGameRepository {
   }
 
   async upsert(gameData: GameUpsertInput): Promise<Game> {
-    const existing = await this.findBySlug(gameData.slug);
+    let existing = await this.findBySlug(gameData.slug);
+    if (!existing && gameData.title) {
+      existing = await this.findBySlug(slugify(gameData.title));
+    }
+    if (!existing && gameData.title) {
+      const cleanTitle = gameData.title.trim().toLowerCase();
+      for (const g of this.games.values()) {
+        if (g.title.trim().toLowerCase() === cleanTitle) {
+          existing = g;
+          break;
+        }
+      }
+    }
+
     const now = new Date().toISOString();
 
     if (existing) {
+      // Don't downgrade exact precision releaseDate if incoming is less precise
+      let mergedReleaseDate = gameData.releaseDate;
+      if (
+        existing.releaseDate?.precision === ReleasePrecision.EXACT &&
+        gameData.releaseDate?.precision !== ReleasePrecision.EXACT
+      ) {
+        mergedReleaseDate = existing.releaseDate;
+      }
+
+      // Combine platforms and genres without duplicates
+      const mergedPlatforms = Array.from(new Set([...existing.platforms, ...gameData.platforms]));
+      const mergedGenres = Array.from(new Set([...existing.genres, ...gameData.genres]));
+
       const updated: Game = {
         ...existing,
         ...gameData,
+        coverUrl: gameData.coverUrl || existing.coverUrl,
+        description: gameData.description || existing.description,
+        developer: gameData.developer || existing.developer,
+        publisher: gameData.publisher || existing.publisher,
+        sourceUrl: gameData.sourceUrl || existing.sourceUrl,
+        releaseDate: mergedReleaseDate,
+        platforms: mergedPlatforms,
+        genres: mergedGenres,
         id: existing.id,
         createdAt: existing.createdAt,
         updatedAt: now,
@@ -105,7 +140,10 @@ export class InMemoryGameRepository implements IGameRepository {
     let updated = 0;
 
     for (const item of gamesData) {
-      const existing = await this.findBySlug(item.slug);
+      let existing = await this.findBySlug(item.slug);
+      if (!existing && item.title) {
+        existing = await this.findBySlug(slugify(item.title));
+      }
       if (existing) {
         await this.upsert(item);
         updated++;

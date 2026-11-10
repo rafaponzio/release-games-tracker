@@ -293,35 +293,47 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
                         : 'bg-slate-950/70 active:bg-slate-800 border border-slate-800 hover:border-purple-500/50 rounded-xl p-3.5 transition-all space-y-2 cursor-pointer shadow-sm'
                     }`}
                   >
-                  <div className="flex items-start justify-between gap-2">
-                    <h4 className="font-bold text-sm text-white group-hover:text-purple-300">
-                      {game.title}
-                    </h4>
-                    <span className="text-[10px] font-semibold text-purple-300 bg-purple-950/60 border border-purple-800/60 px-1.5 py-0.5 rounded shrink-0">
-                      {game.releaseDate.raw}
-                    </span>
-                  </div>
+                    <div className="flex gap-3 items-start">
+                      {game.coverUrl && (
+                        <img
+                          src={game.coverUrl}
+                          alt=""
+                          referrerPolicy="no-referrer"
+                          className="w-12 h-16 object-cover rounded-lg border border-slate-700/80 shrink-0 bg-slate-900 shadow"
+                        />
+                      )}
+                      <div className="flex-1 min-w-0 space-y-1.5">
+                        <div className="flex items-start justify-between gap-2">
+                          <h4 className="font-bold text-sm text-white group-hover:text-purple-300">
+                            {game.title}
+                          </h4>
+                          <span className="text-[10px] font-semibold text-purple-300 bg-purple-950/60 border border-purple-800/60 px-1.5 py-0.5 rounded shrink-0">
+                            {game.releaseDate.raw}
+                          </span>
+                        </div>
 
-                  {/* Platforms */}
-                  <div className="flex flex-wrap items-center gap-1">
-                    {game.platforms.map((p) => (
-                      <span
-                        key={p}
-                        className="text-[10px] font-medium text-slate-300 bg-slate-900 border border-slate-800 px-2 py-0.5 rounded"
-                      >
-                        {p}
-                      </span>
-                    ))}
-                  </div>
+                        {/* Platforms */}
+                        <div className="flex flex-wrap items-center gap-1">
+                          {game.platforms.map((p) => (
+                            <span
+                              key={p}
+                              className="text-[10px] font-medium text-slate-300 bg-slate-900 border border-slate-800 px-2 py-0.5 rounded"
+                            >
+                              {p}
+                            </span>
+                          ))}
+                        </div>
 
-                  {/* Dev & Genre */}
-                  {(game.developer || game.genres.length > 0) && (
-                    <div className="flex flex-wrap items-center gap-2 text-xs text-slate-400 pt-0.5">
-                      {game.developer && <span>Dev: <strong className="text-slate-300 font-medium">{game.developer}</strong></span>}
-                      {game.genres.length > 0 && <span>&bull; {game.genres.slice(0, 2).join(', ')}</span>}
+                        {/* Dev & Genre */}
+                        {(game.developer || game.genres.length > 0) && (
+                          <div className="flex flex-wrap items-center gap-2 text-xs text-slate-400 pt-0.5">
+                            {game.developer && <span>Dev: <strong className="text-slate-300 font-medium">{game.developer}</strong></span>}
+                            {game.genres.length > 0 && <span>&bull; {game.genres.slice(0, 2).join(', ')}</span>}
+                          </div>
+                        )}
+                      </div>
                     </div>
-                  )}
-                </div>
+                  </div>
                 );
               })}
             </div>

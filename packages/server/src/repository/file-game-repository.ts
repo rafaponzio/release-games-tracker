@@ -68,22 +68,9 @@ export class FileGameRepository extends InMemoryGameRepository implements IGameR
 
   override async bulkUpsert(gamesData: GameUpsertInput[]): Promise<{ created: number; updated: number }> {
     await this.ensureLoaded();
-    let created = 0;
-    let updated = 0;
-
-    for (const item of gamesData) {
-      const existing = await super.findBySlug(item.slug);
-      if (existing) {
-        await super.upsert(item);
-        updated++;
-      } else {
-        await super.upsert(item);
-        created++;
-      }
-    }
-
+    const result = await super.bulkUpsert(gamesData);
     await this.persist();
-    return { created, updated };
+    return result;
   }
 
   override async delete(id: string): Promise<boolean> {

@@ -1,6 +1,7 @@
 import { IGameRepository, GameUpsertInput } from '../repository/game-repository.interface.js';
 import { StandardPlatform, normalizePlatforms } from '../domain/platform.js';
 import { ReleasePrecision } from '../domain/release-date.js';
+import { slugify } from '../domain/game.js';
 
 export interface IgdbServiceOptions {
   clientId?: string;
@@ -134,8 +135,8 @@ export class IgdbService {
     // Release Date evaluation
     let releaseDate = this.extractReleaseDate(raw, targetYear);
 
-    // Slug
-    const slug = raw.slug || raw.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+    // Canonical slug
+    const slug = slugify(raw.name);
 
     return {
       title: raw.name,
@@ -238,7 +239,7 @@ export class IgdbService {
 
   async syncYear(
     year: number,
-    limit: number = 100
+    limit: number = 500
   ): Promise<{ total: number; created: number; updated: number }> {
     if (!this.isConfigured()) {
       throw new Error(
@@ -246,20 +247,32 @@ export class IgdbService {
       );
     }
 
-    const query = `
-      fields name, slug, summary, storyline, cover.image_id, genres.name, platforms.name, first_release_date, release_dates.date, release_dates.human, release_dates.m, release_dates.y, release_dates.category, involved_companies.developer, involved_companies.publisher, involved_companies.company.name, url;
-      where release_dates.y = ${year};
-      sort hypes desc;
-      limit ${Math.min(limit, 500)};
-    `;
+    const batchSize = 500;
+    let offset = 0;
+    const allRawGames: IgdbRawGame[] = [];
 
-    const rawGames = await this.queryIgdb<IgdbRawGame[]>('games', query);
+    while (offset < limit) {
+      const currentLimit = Math.min(batchSize, limit - offset);
+      const query = `
+        fields name, slug, summary, storyline, cover.image_id, genres.name, platforms.name, first_release_date, release_dates.date, release_dates.human, release_dates.m, release_dates.y, release_dates.category, involved_companies.developer, involved_companies.publisher, involved_companies.company.name, url;
+        where release_dates.y = ${year};
+        sort hypes desc;
+        limit ${currentLimit};
+        offset ${offset};
+      `;
 
-    const inputs = rawGames.map((g) => this.mapIgdbGameToDomain(g, year));
+      const rawGames = await this.queryIgdb<IgdbRawGame[]>('games', query);
+      if (!rawGames || rawGames.length === 0) break;
+      allRawGames.push(...rawGames);
+      if (rawGames.length < currentLimit) break;
+      offset += currentLimit;
+    }
+
+    const inputs = allRawGames.map((g) => this.mapIgdbGameToDomain(g, year));
     const result = await this.repo.bulkUpsert(inputs);
 
     return {
-      total: rawGames.length,
+      total: allRawGames.length,
       created: result.created,
       updated: result.updated,
     };

@@ -135,11 +135,13 @@ All notable changes, implementation steps, and work log entries for the Game Rel
   - Increased games with cover art from 250 to **2,296** across all years (770 in 2025, 833 in 2026, 459 in 2027).
   - Increased games with full descriptions/synopses from ~200 to **2,283**.
   - Enhanced repository `upsert` and `findBySlug` to intelligently match by canonical slug, `slugify(title)`, and title, merging fields cleanly without downgrading exact release dates.
-- **Server-Side Daily Cron & Clean Client UI**:
-  - Removed the manual "Sincronizar" button from `Navbar` and eliminated polling loops and sync state from `App.tsx`.
-  - Added dedicated server endpoint `GET /api/cron/sync` performing daily releases sync for Wikipedia and IGDB across current, next, and upcoming years.
-  - Added Vercel Cron configuration (`vercel.json`) running `0 3 * * *` (daily at 3:00 AM UTC).
-  - Enhanced standalone `node-cron` in `packages/server/src/index.ts` to automatically sync both Wikipedia and IGDB daily.
+- **Calendar Day Selection & Dynamic Initial Month**:
+  - Fixed hardcoded October default (`new Date(2026, 9, 1)`) in `App.tsx`: app now dynamically defaults to the current day and current month.
+  - Fixed day selection bug in `CalendarView`: eliminated detached `selectedMobileDay` and conflicting `useEffect` that was overwriting user clicks.
+  - Unfied `currentDate` as the single source of truth for the selected day across both desktop and mobile views.
+  - Made every day cell on desktop interactive and selectable: clicking any day cell updates `currentDate` and opens `DayReleasesModal` when releases exist, while game item clicks open `GameModal` directly.
+  - Added full test suite in `packages/client/src/components/CalendarView.test.tsx` verifying day selection on desktop/mobile, current month rendering, today button navigation, and release modal triggering.
+
 
 
 

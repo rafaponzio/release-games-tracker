@@ -49,9 +49,7 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
   const prevMonth = () => setCurrentDate((d) => subMonths(d, 1));
   const nextMonth = () => setCurrentDate((d) => addMonths(d, 1));
   const goToToday = () => {
-    const today = new Date();
-    setCurrentDate(today);
-    setSelectedMobileDay(today);
+    setCurrentDate(new Date());
   };
 
   const monthStart = startOfMonth(currentDate);
@@ -76,30 +74,9 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
     return map;
   }, [games]);
 
-  // Mobile selected date state (agenda view)
-  const [selectedMobileDay, setSelectedMobileDay] = useState<Date>(() => {
-    return isSameMonth(new Date(), currentDate) ? new Date() : startOfMonth(currentDate);
-  });
-
-  // Keep mobile selected date synced with month navigation or specific target day
-  useEffect(() => {
-    if (!isSameMonth(selectedMobileDay, currentDate)) {
-      if (currentDate.getDate() !== 1) {
-        setSelectedMobileDay(currentDate);
-      } else {
-        const firstWithReleases = days.find((d) => {
-          const dStr = format(d, 'yyyy-MM-dd');
-          return isSameMonth(d, monthStart) && gamesByDate[dStr]?.length > 0;
-        });
-        setSelectedMobileDay(firstWithReleases || startOfMonth(currentDate));
-      }
-    } else if (!isSameDay(selectedMobileDay, currentDate) && currentDate.getDate() !== 1) {
-      setSelectedMobileDay(currentDate);
-    }
-  }, [currentDate, days, gamesByDate, monthStart, selectedMobileDay]);
-
-  const selectedMobileDateStr = format(selectedMobileDay, 'yyyy-MM-dd');
-  const selectedMobileGames = gamesByDate[selectedMobileDateStr] || [];
+  // Selected date releases for active day (agenda view)
+  const selectedDateStr = format(currentDate, 'yyyy-MM-dd');
+  const selectedDayGames = gamesByDate[selectedDateStr] || [];
 
   // Estimated/TBA releases this month/quarter
   const currentMonthNum = currentDate.getMonth() + 1;
@@ -120,10 +97,10 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
   const handleJumpNextRelease = () => {
     const nextDay = days.find((d) => {
       const dStr = format(d, 'yyyy-MM-dd');
-      return isSameMonth(d, monthStart) && d > selectedMobileDay && gamesByDate[dStr]?.length > 0;
+      return isSameMonth(d, monthStart) && d > currentDate && gamesByDate[dStr]?.length > 0;
     });
     if (nextDay) {
-      setSelectedMobileDay(nextDay);
+      setCurrentDate(nextDay);
     }
   };
 
@@ -202,7 +179,7 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
               const dateStr = format(day, 'yyyy-MM-dd');
               const dayGames = gamesByDate[dateStr] || [];
               const isCurrMonth = isSameMonth(day, monthStart);
-              const isSelected = isSameDay(day, selectedMobileDay);
+              const isSelected = isSameDay(day, currentDate);
               const isCurrentDay = isToday(day);
               const hasHighlightedGame = highlightedGameId ? dayGames.some((g) => g.id === highlightedGameId) : false;
 
@@ -210,7 +187,8 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
                 <button
                   key={dateStr}
                   type="button"
-                  onClick={() => setSelectedMobileDay(day)}
+                  data-testid={`mobile-day-cell-${dateStr}`}
+                  onClick={() => setCurrentDate(day)}
                   className={`min-h-[48px] rounded-xl p-1 flex flex-col items-center justify-between transition-all relative ${
                     isSelected
                       ? 'bg-purple-600 text-white shadow-md shadow-purple-600/30 ring-2 ring-purple-400'
@@ -256,18 +234,18 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
               <span className="text-[11px] font-semibold uppercase tracking-wider text-purple-400">
                 Lançamentos do dia
               </span>
-              <h3 className="text-base font-bold text-white capitalize">
-                {format(selectedMobileDay, 'EEEE, d MMMM yyyy')}
+              <h3 className="text-base font-bold text-white capitalize" data-testid="mobile-agenda-title">
+                {format(currentDate, 'EEEE, d MMMM yyyy')}
               </h3>
             </div>
-            {selectedMobileGames.length > 0 && (
+            {selectedDayGames.length > 0 && (
               <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-purple-500/20 text-purple-300 border border-purple-500/30">
-                {selectedMobileGames.length} {selectedMobileGames.length === 1 ? 'jogo' : 'jogos'}
+                {selectedDayGames.length} {selectedDayGames.length === 1 ? 'jogo' : 'jogos'}
               </span>
             )}
           </div>
 
-          {selectedMobileGames.length === 0 ? (
+          {selectedDayGames.length === 0 ? (
             <div className="py-6 text-center space-y-2">
               <p className="text-sm text-slate-400">Nenhum lançamento previsto para este dia.</p>
               <button
@@ -281,7 +259,7 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
             </div>
           ) : (
             <div className="space-y-2.5 pt-1">
-              {selectedMobileGames.map((game) => {
+              {selectedDayGames.map((game) => {
                 const isHighlighted = game.id === highlightedGameId;
                 return (
                   <div
@@ -360,40 +338,43 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
             const dayGames = gamesByDate[dateStr] || [];
             const isCurrMonth = isSameMonth(day, monthStart);
             const isCurrentDay = isToday(day);
+            const isSelected = isSameDay(day, currentDate);
             const hasHighlightedGame = highlightedGameId ? dayGames.some((g) => g.id === highlightedGameId) : false;
 
             return (
               <div
                 key={dateStr}
-                className={`min-h-[110px] rounded-xl p-2 border transition-all flex flex-col justify-between ${
-                  hasHighlightedGame
+                data-testid={`desktop-day-cell-${dateStr}`}
+                onClick={() => {
+                  setCurrentDate(day);
+                  if (dayGames.length > 0) {
+                    setSelectedDayModal({ date: day, games: dayGames });
+                  }
+                }}
+                className={`min-h-[110px] rounded-xl p-2 border transition-all flex flex-col justify-between cursor-pointer ${
+                  isSelected
+                    ? 'bg-slate-900 border-2 border-purple-500 ring-2 ring-purple-500/40 shadow-lg'
+                    : hasHighlightedGame
                     ? 'bg-slate-900 border-2 border-purple-400 ring-2 ring-purple-500/50 shadow-lg shadow-purple-500/25'
                     : isCurrMonth
                     ? isCurrentDay
                       ? 'bg-slate-900 border-purple-500/50 shadow-md shadow-purple-500/10'
-                      : 'bg-slate-900/40 border-slate-800 hover:border-slate-700'
-                    : 'bg-slate-950/20 border-slate-900/60 opacity-40'
+                      : 'bg-slate-900/40 border-slate-800 hover:border-purple-500/50 hover:bg-slate-800/60'
+                    : 'bg-slate-950/20 border-slate-900/60 opacity-40 hover:opacity-70'
                 }`}
               >
                 {/* Day Number & Count Badge */}
-                <div
-                  className={`flex items-center justify-between mb-1.5 ${
-                    dayGames.length > 0 ? 'cursor-pointer group/header' : ''
-                  }`}
-                  onClick={() => {
-                    if (dayGames.length > 0) {
-                      setSelectedDayModal({ date: day, games: dayGames });
-                    }
-                  }}
-                >
+                <div className="flex items-center justify-between mb-1.5">
                   <span
                     className={`text-xs font-semibold px-1.5 py-0.5 rounded-md transition-colors ${
-                      hasHighlightedGame
+                      isSelected
+                        ? 'bg-purple-600 text-white font-bold'
+                        : hasHighlightedGame
                         ? 'bg-purple-500 text-white font-bold'
                         : isCurrentDay
                         ? 'bg-purple-600 text-white'
                         : isCurrMonth
-                        ? 'text-slate-300 group-hover/header:text-purple-300'
+                        ? 'text-slate-300'
                         : 'text-slate-600'
                     }`}
                   >
@@ -404,6 +385,7 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
                       type="button"
                       onClick={(e) => {
                         e.stopPropagation();
+                        setCurrentDate(day);
                         setSelectedDayModal({ date: day, games: dayGames });
                       }}
                       title={`Ver todos os ${dayGames.length} lançamentos deste dia`}
@@ -425,7 +407,10 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
                     return (
                       <button
                         key={g.id}
-                        onClick={() => onSelectGame(g)}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onSelectGame(g);
+                        }}
                         className={`w-full text-left p-1.5 rounded-lg border transition-all text-xs group ${
                           isHighlighted
                             ? 'bg-purple-900/90 text-white border-purple-400 ring-2 ring-purple-400/80 shadow-md shadow-purple-500/30 animate-pulse'
@@ -456,6 +441,7 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
                       type="button"
                       onClick={(e) => {
                         e.stopPropagation();
+                        setCurrentDate(day);
                         setSelectedDayModal({ date: day, games: dayGames });
                       }}
                       className="w-full text-[10px] text-purple-300 hover:text-white bg-purple-950/60 hover:bg-purple-800/80 border border-purple-800/60 rounded py-0.5 font-medium text-center transition-colors shadow-sm block"

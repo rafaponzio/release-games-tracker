@@ -17,14 +17,14 @@ export function App() {
   const [viewMode, setViewMode] = useState<'calendar' | 'timeline'>('calendar');
   const [search, setSearch] = useState<string>('');
   const [selectedPlatform, setSelectedPlatform] = useState<StandardPlatform | ''>('');
-  const [selectedYear, setSelectedYear] = useState<number>(2026);
-  const [calendarDate, setCalendarDate] = useState<Date>(() => new Date(2026, 9, 1));
+  const [selectedYear, setSelectedYear] = useState<number>(() => new Date().getFullYear());
+  const [calendarDate, setCalendarDate] = useState<Date>(() => new Date());
   const [selectedGame, setSelectedGame] = useState<Game | null>(null);
   const [highlightedGameId, setHighlightedGameId] = useState<string | null>(null);
 
   const handleYearChange = (year: number) => {
     setSelectedYear(year);
-    setCalendarDate((prev) => new Date(year, prev.getMonth(), 1));
+    setCalendarDate((prev) => new Date(year, prev.getMonth(), prev.getDate()));
   };
 
   const handleCalendarDateChange = (newDate: Date) => {

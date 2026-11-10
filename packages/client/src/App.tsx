@@ -4,9 +4,9 @@ import { FilterBar } from './components/FilterBar';
 import { CalendarView } from './components/CalendarView';
 import { TimelineView } from './components/TimelineView';
 import { GameModal } from './components/GameModal';
-import { fetchGames, fetchScraperStatus, triggerScraperSync } from './services/api';
-import { Game, ScraperStatus, StandardPlatform } from './types';
-import { AlertCircle, CheckCircle2, RefreshCw } from 'lucide-react';
+import { fetchGames } from './services/api';
+import { Game, StandardPlatform } from './types';
+import { AlertCircle, CheckCircle2 } from 'lucide-react';
 
 export function App() {
   const [games, setGames] = useState<Game[]>([]);
@@ -21,10 +21,6 @@ export function App() {
   const [calendarDate, setCalendarDate] = useState<Date>(() => new Date(2026, 9, 1));
   const [selectedGame, setSelectedGame] = useState<Game | null>(null);
   const [highlightedGameId, setHighlightedGameId] = useState<string | null>(null);
-
-  const [isSyncing, setIsSyncing] = useState<boolean>(false);
-  const [scraperStatus, setScraperStatus] = useState<ScraperStatus | null>(null);
-  const prevSyncingRef = useRef<boolean>(false);
 
   const handleYearChange = (year: number) => {
     setSelectedYear(year);
@@ -87,9 +83,6 @@ export function App() {
         search,
       });
       setGames(data);
-      if (data.length === 0) {
-        loadStatus();
-      }
     } catch (err: any) {
       setError(err.message || 'Failed to load games');
     } finally {
@@ -97,62 +90,15 @@ export function App() {
     }
   };
 
-  const loadStatus = async () => {
-    try {
-      const status = await fetchScraperStatus();
-      setScraperStatus(status);
-      setIsSyncing(status.isSyncing);
-    } catch {}
-  };
-
   useEffect(() => {
     loadData();
   }, [selectedYear, selectedPlatform, search]);
-
-  useEffect(() => {
-    loadStatus();
-    const interval = setInterval(loadStatus, 4000);
-    return () => clearInterval(interval);
-  }, []);
-
-  // Reactive auto-reload: when background sync completes, refresh data automatically
-  useEffect(() => {
-    if (prevSyncingRef.current && !isSyncing) {
-      loadData();
-    }
-    prevSyncingRef.current = isSyncing;
-  }, [isSyncing]);
-
-  const handleSync = async () => {
-    try {
-      setIsSyncing(true);
-      setNotification(null);
-      const res = await triggerScraperSync(selectedYear);
-      setNotification({
-        type: 'success',
-        message: `Synced ${res.totalScraped} games for ${selectedYear}!`,
-      });
-      await loadData();
-      await loadStatus();
-    } catch (err: any) {
-      setNotification({
-        type: 'error',
-        message: err.message || 'Scrape sync failed',
-      });
-    } finally {
-      setIsSyncing(false);
-      setTimeout(() => setNotification(null), 5000);
-    }
-  };
 
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col font-sans">
       <Navbar
         viewMode={viewMode}
         onViewModeChange={setViewMode}
-        scraperStatus={scraperStatus}
-        onSync={handleSync}
-        isSyncing={isSyncing}
       />
 
       <main className="max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-1">
@@ -185,20 +131,6 @@ export function App() {
           totalGames={games.length}
           onSelectGame={handleSelectGameFromSearch}
         />
-
-        {/* Background Syncing Indicator */}
-        {isSyncing && (
-          <div className="mb-6 p-4 rounded-xl flex items-center justify-between bg-purple-950/40 border border-purple-800 text-purple-300 text-sm">
-            <div className="flex items-center gap-3">
-              <RefreshCw className="w-5 h-5 text-purple-400 shrink-0 animate-spin" />
-              <div>
-                <span className="font-semibold text-white">Syncing release data:</span>{' '}
-                Fetching games from Wikipedia
-                {scraperStatus?.lastSync?.year ? ` for ${scraperStatus.lastSync.year}` : ''}... The schedule will refresh automatically when finished!
-              </div>
-            </div>
-          </div>
-        )}
 
         {/* Error State */}
         {error && (

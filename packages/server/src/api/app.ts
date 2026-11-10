@@ -174,6 +174,48 @@ export function createApp(options: AppOptions) {
     }
   });
 
+  // Server-side daily cron endpoint (triggered by Vercel Cron or external schedulers)
+  app.get('/api/cron/sync', async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const authHeader = req.headers.authorization;
+      const cronSecret = process.env.CRON_SECRET;
+      // If CRON_SECRET is defined, verify bearer token
+      if (cronSecret && authHeader !== `Bearer ${cronSecret}`) {
+        return res.status(401).json({ error: 'Unauthorized cron request' });
+      }
+
+      const currentYear = new Date().getFullYear();
+      const years = [currentYear, currentYear + 1, currentYear + 2];
+      const results: Record<number, any> = {};
+
+      for (const y of years) {
+        try {
+          const wikiRes = await scraperService.syncYear(y);
+          results[y] = { wikipedia: wikiRes };
+        } catch (e: any) {
+          results[y] = { wikipediaError: e.message };
+        }
+
+        if (options.igdbService?.isConfigured()) {
+          try {
+            const igdbRes = await options.igdbService.syncYear(y, 500);
+            results[y] = { ...results[y], igdb: igdbRes };
+          } catch (e: any) {
+            results[y] = { ...results[y], igdbError: e.message };
+          }
+        }
+      }
+
+      res.json({
+        message: 'Daily server-side sync completed successfully',
+        timestamp: new Date().toISOString(),
+        results,
+      });
+    } catch (err: any) {
+      next(err);
+    }
+  });
+
   // Export iCalendar (.ics)
   app.get('/api/calendar/export.ics', async (_req: Request, res: Response, next: NextFunction) => {
     try {

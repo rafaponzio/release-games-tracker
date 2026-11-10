@@ -135,10 +135,12 @@ All notable changes, implementation steps, and work log entries for the Game Rel
   - Increased games with cover art from 250 to **2,296** across all years (770 in 2025, 833 in 2026, 459 in 2027).
   - Increased games with full descriptions/synopses from ~200 to **2,283**.
   - Enhanced repository `upsert` and `findBySlug` to intelligently match by canonical slug, `slugify(title)`, and title, merging fields cleanly without downgrading exact release dates.
-- **Visual Cover Art Previews Across App**:
-  - Added cover thumbnails to live search autocomplete dropdown (`FilterBar`).
-  - Added cover thumbnails to day releases modal list (`DayReleasesModal`).
-  - Added cover thumbnails to mobile day agenda cards (`CalendarView`).
+- **Server-Side Daily Cron & Clean Client UI**:
+  - Removed the manual "Sincronizar" button from `Navbar` and eliminated polling loops and sync state from `App.tsx`.
+  - Added dedicated server endpoint `GET /api/cron/sync` performing daily releases sync for Wikipedia and IGDB across current, next, and upcoming years.
+  - Added Vercel Cron configuration (`vercel.json`) running `0 3 * * *` (daily at 3:00 AM UTC).
+  - Enhanced standalone `node-cron` in `packages/server/src/index.ts` to automatically sync both Wikipedia and IGDB daily.
+
 
 
 

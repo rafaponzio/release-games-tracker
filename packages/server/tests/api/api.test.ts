@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
 import request from 'supertest';
 import { createApp } from '../../src/api/app.js';
 import { InMemoryGameRepository } from '../../src/repository/in-memory-game-repository.js';
@@ -101,5 +101,18 @@ describe('REST API & Security Middleware (Supertest TDD)', () => {
     const res = await request(app).get('/api/scraper/status');
     expect(res.status).toBe(200);
     expect(res.body.isSyncing).toBe(false);
+  });
+
+  it('GET /api/cron/sync performs daily sync and returns status', async () => {
+    vi.spyOn(scraperService, 'syncYear').mockResolvedValue({
+      totalScraped: 10,
+      created: 5,
+      updated: 5,
+      failed: 0,
+    });
+    const res = await request(app).get('/api/cron/sync');
+    expect(res.status).toBe(200);
+    expect(res.body.message).toContain('Daily server-side sync completed');
+    expect(res.body.results).toBeDefined();
   });
 });

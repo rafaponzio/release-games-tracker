@@ -97,16 +97,21 @@ if (!process.env.VERCEL) {
     })();
   }
 
-  // Background cron scheduler: syncs current and upcoming year
+  // Background cron scheduler: syncs current and upcoming years daily
   cron.schedule(CRON_SCHEDULE, async () => {
     const currentYear = new Date().getFullYear();
-    console.log(`[Cron] Executing scheduled game release sync for ${currentYear} and ${currentYear + 1}...`);
+    console.log(`[Cron] Executing scheduled daily game release sync for ${currentYear}, ${currentYear + 1}, and ${currentYear + 2}...`);
     try {
       await scraperService.syncYear(currentYear);
       await scraperService.syncYear(currentYear + 1);
-      console.log(`[Cron] Sync finished successfully.`);
+      if (igdbService.isConfigured()) {
+        await igdbService.syncYear(currentYear, 500);
+        await igdbService.syncYear(currentYear + 1, 500);
+        await igdbService.syncYear(currentYear + 2, 500);
+      }
+      console.log(`[Cron] Daily sync finished successfully.`);
     } catch (err: any) {
-      console.error(`[Cron] Sync failed: ${err.message}`);
+      console.error(`[Cron] Daily sync failed: ${err.message}`);
     }
   });
 

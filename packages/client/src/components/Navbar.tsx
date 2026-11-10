@@ -1,21 +1,14 @@
 import React from 'react';
-import { Calendar as CalendarIcon, List, RefreshCw, Download, Gamepad2 } from 'lucide-react';
-import { ScraperStatus } from '../types';
+import { Calendar as CalendarIcon, List, Download, Gamepad2 } from 'lucide-react';
 
 interface NavbarProps {
   viewMode: 'calendar' | 'timeline';
   onViewModeChange: (mode: 'calendar' | 'timeline') => void;
-  scraperStatus: ScraperStatus | null;
-  onSync: () => void;
-  isSyncing: boolean;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
   viewMode,
   onViewModeChange,
-  scraperStatus,
-  onSync,
-  isSyncing,
 }) => {
   return (
     <header className="sticky top-0 z-30 border-b border-slate-800 bg-slate-950/90 backdrop-blur-md">
@@ -63,17 +56,6 @@ export const Navbar: React.FC<NavbarProps> = ({
               <span className="hidden xs:inline sm:inline">Timeline</span>
             </button>
           </div>
-
-          {/* Sync Button */}
-          <button
-            onClick={onSync}
-            disabled={isSyncing}
-            title={scraperStatus?.lastSync ? `Última sincronização: ${new Date(scraperStatus.lastSync.startedAt).toLocaleTimeString()}` : 'Sincronizar lançamentos'}
-            className="flex items-center justify-center gap-1.5 p-2 sm:px-3 sm:py-1.5 text-xs font-medium rounded-lg border border-slate-700 bg-slate-900 hover:bg-slate-800 text-slate-300 hover:text-white transition-all disabled:opacity-50"
-          >
-            <RefreshCw className={`w-3.5 h-3.5 ${isSyncing ? 'animate-spin text-purple-400' : ''}`} />
-            <span className="hidden md:inline">{isSyncing ? 'Sincronizando...' : 'Sincronizar'}</span>
-          </button>
 
           {/* iCal Export Button */}
           <a
